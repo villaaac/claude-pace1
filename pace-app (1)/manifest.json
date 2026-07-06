@@ -1,0 +1,14 @@
+{
+  "name": "PACE — AI Coach",
+  "short_name": "PACE",
+  "description": "AI Coach. Every rep. Every day.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B0B0F",
+  "theme_color": "#0B0B0F",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
