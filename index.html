@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>PACE — AI Coach. Every rep. Every day.</title>
+<meta name="theme-color" content="#0B0B0F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="manifest" href="/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
@@ -466,9 +470,9 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
       <div class="ko-title">WORKOUT<br>COMPLETE</div>
       <div class="ko-sub">That's how champions train. 🔥 13-day streak.</div>
       <div class="ko-stats">
-        <div class="ko-stat"><div class="ko-stat-v">24:18</div><div class="ko-stat-l">⏱ Time</div></div>
-        <div class="ko-stat"><div class="ko-stat-v lime" style="color:var(--lime);">286</div><div class="ko-stat-l">🔥 Cals</div></div>
-        <div class="ko-stat"><div class="ko-stat-v" style="color:var(--orange);">148</div><div class="ko-stat-l">❤ Avg HR</div></div>
+        <div class="ko-stat"><div class="ko-stat-v" id="ko-time">0:00</div><div class="ko-stat-l">⏱ Time</div></div>
+        <div class="ko-stat"><div class="ko-stat-v lime" id="ko-cals" style="color:var(--lime);">0</div><div class="ko-stat-l">🔥 Cals</div></div>
+        <div class="ko-stat"><div class="ko-stat-v" style="color:var(--orange);">142</div><div class="ko-stat-l">❤ Avg HR</div></div>
       </div>
       <div class="feel-q">How'd that feel?</div>
       <div class="feels">
@@ -581,17 +585,12 @@ function go(name){
   const nav=document.getElementById('nav');
   if(name==='workout'||name==='rest'||name==='complete'||name==='chat') nav.classList.add('hidden');
   else nav.classList.remove('hidden');
-  // side effects
-  if(name==='chat' && !chatStarted){ /* fresh greeting already in DOM */ }
-  if(name==='workout') startTimer('work');
-  if(name==='rest') startTimer('rest');
+  // side effects — the workout engine manages timing itself now
   if(name==='complete'){ stopTimer(); fireConfetti(); }
-  document.getElementById('s-'+name).scrollTop=0;
+  if(name==='progress'){ renderProgress(); }
+  const scr=document.getElementById('s-'+name); if(scr) scr.scrollTop=0;
 }
 
-// ── TIMER ──
-let tId=null, tLeft=28, tTotal=45, paused=false, mode='work';
-const CIRC=829.4;
 // ── VOICE ENGINE (hands-free coaching) ──
 let voiceOn=true;
 let lastSpokenSecond=null;
@@ -600,7 +599,6 @@ function speak(text, opts={}){
   try{
     const u=new SpeechSynthesisUtterance(text);
     u.rate=opts.rate||1.05; u.pitch=opts.pitch||1; u.volume=1;
-    // prefer an energetic English voice if available
     const vs=speechSynthesis.getVoices();
     const pref=vs.find(v=>/en-US|en_GB|English/i.test(v.lang)&&/male|Daniel|Alex|Google US/i.test(v.name))||vs.find(v=>/en/i.test(v.lang));
     if(pref) u.voice=pref;
@@ -617,39 +615,71 @@ function toggleVoice(){
   if(voiceOn) speak('Voice on.'); else speechSynthesis.cancel();
 }
 
-function startTimer(m){
-  mode=m; stopTimer(); lastSpokenSecond=null;
-  if(m==='work'){ tLeft=28; tTotal=45; }
-  else { tLeft=10; tTotal=15; }
-  paused=false;
-  const pl=document.getElementById('wk-pause-l'); if(pl) pl.textContent='Pause';
-  updateRing();
-  // Coach announces the phase, hands-free
-  if(m==='work'){
-    const ex=document.getElementById('wk-ex').textContent;
-    speak(`Round 2. ${ex}. Let's work.`, {rate:1.05, pitch:1.05});
+// ── DATA-DRIVEN WORKOUT ENGINE ──
+const CIRC=829.4;
+let tId=null, tLeft=0, tTotal=1, paused=false, mode='work';
+let phases=[];        // built from the coach's workout
+let pIdx=0;           // current phase index
+let activeWorkout=null;
+let sessionStart=0;
+let cuePool=[];
+
+// Build a phase list (work/rest alternating) from a coach workout object.
+function launchWorkout(w){
+  activeWorkout=w;
+  cuePool=(w.coachingCues&&w.coachingCues.length)?w.coachingCues.slice():['Stay sharp.','Keep your form.','You\u2019ve got this.'];
+  const work=Math.max(5, w.work||40);
+  const rest=Math.max(0, w.rest||20);
+  const list=(w.exercises&&w.exercises.length)?w.exercises:['Work'];
+  phases=[];
+  list.forEach((ex,i)=>{
+    phases.push({type:'work', name:ex, dur:work, round:i+1, total:list.length});
+    if(i<list.length-1) phases.push({type:'rest', name:'Rest', dur:rest, nextName:list[i+1], round:i+1, total:list.length});
+  });
+  pIdx=0; sessionStart=Date.now();
+  if('speechSynthesis' in window){ speak(' '); } // unlock audio on gesture
+  const cb=document.getElementById('coach-bubble');
+  go('workout');
+  startPhase();
+}
+
+function startPhase(){
+  stopTimer(); lastSpokenSecond=null;
+  const ph=phases[pIdx]; if(!ph){ finishWorkout(); return; }
+  mode=ph.type; tTotal=ph.dur; tLeft=ph.dur; paused=false;
+
+  if(ph.type==='work'){
+    go('workout');
+    document.getElementById('wk-round').textContent=`Round ${ph.round} of ${ph.total}`;
+    document.getElementById('wk-ex').textContent=ph.name;
+    document.getElementById('wk-phase-sub').textContent=`${ph.dur}s work`;
+    const nextRest=phases[pIdx+1];
+    document.getElementById('wk-upnext').textContent = nextRest&&nextRest.nextName ? `${nextRest.nextName}` : 'Finish strong';
+    const pl=document.getElementById('wk-pause-l'); if(pl) pl.textContent='Pause';
+    speak(`Round ${ph.round}. ${ph.name}. Let's work.`, {rate:1.05, pitch:1.05});
   } else {
-    speak(`Rest. Breathe. Up next, Speed Bag.`, {rate:1, pitch:.98});
+    go('rest');
+    document.querySelector('#s-rest .wk-round').textContent=`Rest · Round ${ph.round} of ${ph.total}`;
+    document.querySelector('#s-rest .upnext-n').textContent = ph.nextName ? `${ph.nextName}` : 'Last round';
+    speak(`Rest. Breathe.${ph.nextName?' Up next, '+ph.nextName+'.':''}`, {rate:1, pitch:.98});
   }
-  tId=setInterval(()=>{
-    if(paused) return;
-    tLeft--;
-    if(tLeft<0){
-      if(mode==='work'){ go('rest'); }
-      else { go('complete'); }
-      return;
-    }
-    updateRing();
-    // Spoken countdown for the final 5 seconds of any phase
-    if(tLeft<=5 && tLeft>=1 && tLeft!==lastSpokenSecond){
-      lastSpokenSecond=tLeft;
-      speak(String(tLeft), {rate:1.2, pitch: tLeft===1?1.3:1.0});
-    }
-    // A mid-work corner-man cue
-    if(mode==='work' && tLeft===Math.floor(tTotal/2)){
-      speak('Hands up. Stay sharp.', {rate:1.05, pitch:1.05});
-    }
-  },1000);
+  updateRing();
+  tId=setInterval(tick,1000);
+}
+
+function tick(){
+  if(paused) return;
+  tLeft--;
+  if(tLeft<0){ pIdx++; startPhase(); return; }
+  updateRing();
+  if(tLeft<=5 && tLeft>=1 && tLeft!==lastSpokenSecond){
+    lastSpokenSecond=tLeft;
+    speak(String(tLeft), {rate:1.2, pitch: tLeft===1?1.3:1.0});
+  }
+  if(mode==='work' && tLeft===Math.floor(tTotal/2) && cuePool.length){
+    const cue=cuePool[(phases[pIdx].round-1)%cuePool.length];
+    speak(cue, {rate:1.05, pitch:1.05});
+  }
 }
 function stopTimer(){ if(tId){ clearInterval(tId); tId=null; } }
 function updateRing(){
@@ -667,33 +697,46 @@ function togglePause(){
   document.getElementById('wk-pause-l').textContent=paused?'Resume':'Pause';
   speak(paused?'Paused.':'Back to work.', {rate:1.05});
 }
-function nextPhase(){ if(mode==='work') go('rest'); else go('complete'); }
-function skipRest(){ go('complete'); }
-function startWorkout(){
-  // Unlock audio on user gesture (mobile requires this)
-  if('speechSynthesis' in window){ speak(' '); }
-  go('workout');
+function nextPhase(){ stopTimer(); pIdx++; startPhase(); }
+function skipRest(){ stopTimer(); pIdx++; startPhase(); }
+
+function finishWorkout(){
+  stopTimer();
+  const elapsed=Math.round((Date.now()-sessionStart)/1000);
+  const mins=Math.floor(elapsed/60), secs=elapsed%60;
+  const workSecs=(activeWorkout?activeWorkout.rounds*(activeWorkout.work||40):0);
+  const cals=Math.round(workSecs*0.14);
+  // populate complete screen with REAL stats
+  const tEl=document.getElementById('ko-time'); if(tEl) tEl.textContent=`${mins}:${String(secs).padStart(2,'0')}`;
+  const cEl=document.getElementById('ko-cals'); if(cEl) cEl.textContent=cals;
+  recordSession(cals, workSecs);
+  speak('Workout complete. That\u2019s how champions train.', {rate:1.02, pitch:1.05});
+  go('complete');
 }
+
+// legacy entry points kept working
+function startWorkout(){ if(loadedWorkout) launchWorkout(loadedWorkout); else go('workout'); }
 
 // ── COACH ──
 function openCoach(){ document.getElementById('coach-overlay').classList.add('on'); }
 function closeCoach(){ document.getElementById('coach-overlay').classList.remove('on'); }
 function go2coachDemo(){ openCoach(); }
 document.getElementById('s-today') && (window.go=go);
-// ── CHAT / CONVERSATION ──
+// ── CHAT / CONVERSATION (connected to live AI coach) ──
 let chatStarted=false;
+let coachHistory=[];        // full conversation sent to the backend
+let loadedWorkout=null;     // the workout the coach last built
 
-function quickSend(text){ addUserMsg(text); coachRespond(text); }
+function quickSend(text){ addUserMsg(text); askCoach(text); }
 function sendChat(){
   const inp=document.getElementById('chat-input');
   const t=inp.value.trim(); if(!t) return;
   inp.value='';
-  addUserMsg(t); coachRespond(t);
+  addUserMsg(t); askCoach(t);
 }
 function addUserMsg(text){
   const body=document.getElementById('chat-body');
   const m=document.createElement('div'); m.className='c-msg user'; m.textContent=text; body.appendChild(m);
-  // hide chips after first engagement
   const chips=document.getElementById('chat-chips'); if(chips) chips.style.display='none';
   chatStarted=true;
   body.scrollTop=body.scrollHeight;
@@ -705,56 +748,53 @@ function addCoachMsg(text){
 }
 function showTyping(){
   const body=document.getElementById('chat-body');
+  if(document.getElementById('typing')) return;
   const t=document.createElement('div'); t.className='typing'; t.id='typing';
   t.innerHTML='<span></span><span></span><span></span>'; body.appendChild(t);
   body.scrollTop=body.scrollHeight;
 }
 function hideTyping(){ const t=document.getElementById('typing'); if(t) t.remove(); }
 
-// Scripted "AI" responses for the prototype — real version calls the model.
-function coachRespond(userText){
+// Real call to the AI coach backend.
+async function askCoach(userText){
+  coachHistory.push({role:'user', content:userText});
   showTyping();
-  const lower=userText.toLowerCase();
-  // pick a plan flavor from what they said
-  let plan;
-  if(lower.includes('box')){
-    plan={name:'Boxing Hand Speed', rounds:6, min:20, intensity:'HIGH',
-      pitch:"Hands were the theme — let's sharpen speed and footwork.",
-      list:['Jump Rope','Shadow Boxing','Speed Bag','Double-End Bag','Slip & Counter','Core Plank']};
-  } else if(lower.includes('tired')||lower.includes('low')||lower.includes('wiped')){
-    plan={name:'Reset & Flow', rounds:5, min:16, intensity:'LOW',
-      pitch:"Low energy, noted. We keep it moving without burning you out — restorative but real.",
-      list:['Light Shadow Box','Mobility Flow','Bodyweight Squats','Breathing Rounds','Core Hold']};
-  } else if(lower.includes('quick')||lower.includes('15')){
-    plan={name:'15-Minute Burner', rounds:5, min:15, intensity:'HIGH',
-      pitch:"Short and sharp. Five hard rounds, in and out.",
-      list:['Burpees','High Knees','Jump Squats','Mountain Climbers','Plank Punches']};
-  } else if(lower.includes('surprise')){
-    plan={name:'Coach\u2019s Pick: Combo Ladder', rounds:7, min:22, intensity:'MEDIUM',
-      pitch:"You said surprise me — here's a combo ladder you haven't done. Trust me.",
-      list:['Jab-Cross','Jab-Cross-Hook','Add Slip','Add Roll','Speed Round','Power Round','Finisher']};
-  } else {
-    plan={name:'Fired-Up Full Body', rounds:6, min:24, intensity:'HIGH',
-      pitch:"Love the energy. Here's a session to spend it — full body, high pace.",
-      list:['Jump Rope','Burpees','Shadow Boxing','Kettlebell Swings','Push-Ups','Core Plank']};
-  }
-  setTimeout(()=>{
+  try{
+    const res=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages:coachHistory})
+    });
     hideTyping();
-    addCoachMsg(plan.pitch);
-    setTimeout(()=>{ renderPlan(plan); }, 550);
-  }, 1100);
+    if(!res.ok){ throw new Error('bad response'); }
+    const data=await res.json();
+    coachHistory.push({role:'assistant', content: data.workout ? JSON.stringify(data.workout) : data.reply});
+    if(data.workout){
+      if(data.reply) addCoachMsg(data.reply);
+      renderPlan(data.workout);
+    } else {
+      addCoachMsg(data.reply || "Let's get after it.");
+    }
+  }catch(e){
+    hideTyping();
+    addCoachMsg("I couldn't reach your coach just now — check the connection and try again. In the meantime, tap a quick option and let's move.");
+  }
 }
 
-function renderPlan(plan){
+function renderPlan(w){
+  loadedWorkout=w;
+  const mins=Math.round((w.rounds*(w.work+w.rest))/60);
   const body=document.getElementById('chat-body');
   const card=document.createElement('div'); card.className='c-plan';
+  const list=(w.exercises||[]);
   card.innerHTML=`
     <div class="c-plan-badge">✦ Built for you · right now</div>
-    <div class="c-plan-name">${plan.name}</div>
-    <div class="c-plan-line">${plan.rounds} rounds · ${plan.min} min · ${plan.intensity} intensity</div>
-    <div class="c-plan-line" style="margin-top:6px;">${plan.list.slice(0,4).join(' · ')}${plan.list.length>4?' · +'+(plan.list.length-4)+' more':''}</div>
-    <button class="c-plan-cta" onclick="startWorkout()">Start this session</button>
+    <div class="c-plan-name">${w.name||'Your Session'}</div>
+    <div class="c-plan-line">${w.rounds} rounds · ${mins} min · ${w.intensity||'MEDIUM'} intensity</div>
+    <div class="c-plan-line" style="margin-top:6px;">${list.slice(0,4).join(' · ')}${list.length>4?' · +'+(list.length-4)+' more':''}</div>
+    <button class="c-plan-cta">Start this session</button>
   `;
+  card.querySelector('.c-plan-cta').addEventListener('click', ()=>launchWorkout(w));
   body.appendChild(card);
   body.scrollTop=body.scrollHeight;
 }
@@ -796,6 +836,71 @@ function fireConfetti(){
   }
   setTimeout(()=>{ box.innerHTML=''; }, 4200);
 }
+
+// ── PERSISTENCE + PROGRESS ──
+let stats={sessions:0, cals:0, workSec:0, days:{}, streak:0, lastDay:null};
+
+function loadStats(){
+  try{
+    const s=JSON.parse(localStorage.getItem('pace-stats')||'null');
+    if(s) stats=Object.assign(stats,s);
+  }catch(e){}
+}
+function saveStats(){
+  try{ localStorage.setItem('pace-stats', JSON.stringify(stats)); }catch(e){}
+}
+function todayKey(){ const d=new Date(); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
+
+function recordSession(cals, workSec){
+  stats.sessions++; stats.cals+=cals; stats.workSec+=workSec;
+  const k=todayKey();
+  stats.days[k]=(stats.days[k]||0)+1;
+  // streak: consecutive days with >=1 session
+  const d=new Date(); let streak=0;
+  for(let i=0;i<365;i++){
+    const key=`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    if(stats.days[key]){ streak++; d.setDate(d.getDate()-1); } else break;
+  }
+  stats.streak=streak;
+  saveStats();
+  // reflect streak in home + complete
+  document.querySelectorAll('.streak').forEach(s=>s.innerHTML=`<span class="flame">🔥</span> ${streak}`);
+  const koSub=document.querySelector('#s-complete .ko-sub');
+  if(koSub) koSub.textContent=`That's how champions train. 🔥 ${streak}-day streak.`;
+}
+
+function renderProgress(){
+  // week strip: mark done days
+  const now=new Date();
+  const dayOfWeek=(now.getDay()+6)%7; // Mon=0
+  const monday=new Date(now); monday.setDate(now.getDate()-dayOfWeek);
+  let weekCount=0;
+  document.querySelectorAll('#s-progress .wd').forEach((el,i)=>{
+    const d=new Date(monday); d.setDate(monday.getDate()+i);
+    const key=`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    el.classList.remove('done','today');
+    if(stats.days[key]){ el.classList.add('done'); weekCount++; }
+    if(i===dayOfWeek) el.classList.add('today');
+  });
+  const wc=document.querySelector('#s-progress .week-count-v');
+  if(wc) wc.innerHTML=`<span class="lime">${weekCount}</span> / 5`;
+  const bar=document.querySelector('#s-progress .week-bar-fill');
+  if(bar) bar.style.width=Math.min(100,(weekCount/5)*100)+'%';
+  // big stats
+  const totMin=Math.round(stats.workSec/60);
+  const setT=(sel,val)=>{const e=document.querySelector(sel);if(e)e.textContent=val;};
+  setT('#s-progress .big-stat:nth-child(1) .big-stat-v', `${Math.floor(totMin/60)}h ${totMin%60}m`);
+  setT('#s-progress .big-stat:nth-child(2) .big-stat-v', stats.cals.toLocaleString());
+  // accountability card
+  const acc=document.querySelector('.accountable .acc-t');
+  if(acc) acc.textContent=`You're on a ${stats.streak}-day streak`;
+}
+
+// ── INIT ──
+loadStats();
+document.querySelectorAll('.streak').forEach(s=>s.innerHTML=`<span class="flame">🔥</span> ${stats.streak||0}`);
+if('speechSynthesis' in window){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices(); }
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{})); }
 </script>
 </body>
 </html>
