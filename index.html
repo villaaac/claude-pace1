@@ -84,6 +84,33 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 .engage-btn svg{width:22px;height:22px;flex-shrink:0;}
 .engage-hint{margin-top:14px;font-size:13px;color:var(--steel);}
 
+/* styled gold flame (replaces emoji) */
+.flame-ico{display:inline-block;width:10px;height:13px;position:relative;flex-shrink:0;
+  background:linear-gradient(to top, var(--gold), #ffd873);
+  border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
+  transform:rotate(-2deg);box-shadow:0 0 6px rgba(232,184,75,.5);}
+.flame-ico::after{content:'';position:absolute;left:50%;top:38%;width:4px;height:6px;transform:translateX(-50%);
+  background:var(--canvas);border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;opacity:.55;}
+
+/* morphing conversation on Home */
+.home-hero{transition:opacity .3s ease, max-height .45s cubic-bezier(.16,1,.3,1);}
+#s-home.talking .home-hero{opacity:0;max-height:0;overflow:hidden;pointer-events:none;margin:0;padding:0;flex:0;}
+#s-home.talking #home-resume{display:none!important;}
+.convo{display:none;flex-direction:column;flex:1;min-height:0;animation:convoIn .4s cubic-bezier(.16,1,.3,1);}
+#s-home.talking .convo{display:flex;}
+@keyframes convoIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+.convo-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-shrink:0;}
+
+/* emoji replacements — clean styled elements */
+.feel-emo{width:26px;height:26px;border-radius:50%;margin:0 auto 2px;}
+.feel-easy{background:var(--steel);}
+.feel-right{background:var(--lime);}
+.feel-hard{background:var(--orange);}
+.feel.sel .feel-emo{box-shadow:0 0 0 3px rgba(196,255,61,.25);}
+.rec-thumb{font-family:'Barlow Condensed';font-weight:800;font-size:20px;color:var(--lime);}
+.cue-ico{width:10px;height:10px;border-radius:50%;background:var(--lime);box-shadow:0 0 8px rgba(196,255,61,.5);}
+.acc-badge{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--gold),#ffd873);}
+
 /* CHAT screen */
 .chat-head{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-shrink:0;}
 .chat-back{width:38px;height:38px;border-radius:50%;background:var(--card);border:1px solid var(--line);color:var(--bone);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -299,59 +326,59 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
   <div class="screen on" id="s-home">
     <div class="topbar">
       <div class="brand">PACE</div>
-      <div class="streak"><span class="flame">🔥</span> 12</div>
+      <div class="streak" id="home-streak"><span class="flame-ico"></span> <span id="streak-n">0</span></div>
     </div>
-    <div class="home-hero">
+
+    <!-- HERO (collapses when the conversation opens) -->
+    <div class="home-hero" id="home-hero">
       <div class="home-kicker">Your corner is ready</div>
       <div class="home-title">WHAT ARE WE<br>TRAINING<br>TODAY?</div>
       <div class="home-sub">Tell your coach your mood, your time, your goal — get a session built for right now.</div>
-      <button class="engage-btn" onclick="go('chat')">
+      <button class="engage-btn" onclick="engageCoach()">
         <span class="engage-orb"></span>
         <span class="engage-txt">Talk to your coach</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </button>
-      <div class="engage-hint">or hold to talk hands-free 🎤</div>
+      <div class="engage-hint">or hold the mic to talk hands-free</div>
     </div>
-    <div class="resume" onclick="go('workout')">
+    <div class="resume" id="home-resume" onclick="resumeLast()" style="display:none;">
       <div class="resume-l">
         <div class="resume-t">Resume last workout</div>
-        <div class="resume-s">Boxing Hand Speed · Round 2 of 6</div>
+        <div class="resume-s" id="resume-sub">—</div>
       </div>
       <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
-  </div>
 
-  <!-- ══ CHAT (the conversation — coach builds your session) ══ -->
-  <div class="screen" id="s-chat">
-    <div class="chat-head">
-      <button class="chat-back" onclick="go('home')" aria-label="Back">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <div class="chat-coach">
-        <span class="chat-coach-orb"></span>
-        <div>
-          <div class="chat-coach-name">Your Coach</div>
-          <div class="chat-coach-status">Ready · knows your last 12 sessions</div>
+    <!-- CONVERSATION (hidden until engaged; appears inline, same screen) -->
+    <div class="convo" id="convo">
+      <div class="convo-head">
+        <button class="chat-back" onclick="collapseCoach()" aria-label="Back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="chat-coach">
+          <span class="chat-coach-orb"></span>
+          <div>
+            <div class="chat-coach-name">Your Coach</div>
+            <div class="chat-coach-status">Ready when you are</div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="chat-body" id="chat-body">
-      <div class="c-msg coach">Hey — good to see you back. 🔥 That's 12 days straight. What are you feeling today: wiped, ready, or somewhere in between?</div>
-    </div>
+      <div class="chat-body" id="chat-body"></div>
 
-    <div class="chips" id="chat-chips">
-      <button class="chip" onclick="quickSend('I\'m fired up — hit me hard')">💪 Fired up</button>
-      <button class="chip" onclick="quickSend('Bit tired but want to move')">😮‍💨 Low energy</button>
-      <button class="chip" onclick="quickSend('Boxing session, 20 minutes')">🥊 Boxing · 20m</button>
-      <button class="chip" onclick="quickSend('Quick 15 minute burner')">⚡ Quick 15</button>
-      <button class="chip" onclick="quickSend('Surprise me')">🎲 Surprise me</button>
-    </div>
+      <div class="chips" id="chat-chips">
+        <button class="chip" onclick="quickSend('I\'m fired up — hit me hard')">Fired up</button>
+        <button class="chip" onclick="quickSend('Bit tired but want to move')">Low energy</button>
+        <button class="chip" onclick="quickSend('Quick 15 minute session')">Quick 15</button>
+        <button class="chip" onclick="quickSend('Full body, medium intensity')">Full body</button>
+        <button class="chip" onclick="quickSend('Surprise me with something new')">Surprise me</button>
+      </div>
 
-    <div class="chat-input-row">
-      <input type="text" class="chat-input" id="chat-input" placeholder="Tell your coach what you need…" onkeydown="if(event.key==='Enter')sendChat()">
-      <button class="chat-mic" onclick="micPulse(this)" aria-label="Voice"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/></svg></button>
-      <button class="chat-send" onclick="sendChat()" aria-label="Send"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
+      <div class="chat-input-row">
+        <input type="text" class="chat-input" id="chat-input" placeholder="Tell your coach what you need…" onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="chat-mic" onclick="micPulse(this)" aria-label="Voice"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/></svg></button>
+        <button class="chat-send" onclick="sendChat()" aria-label="Send"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
+      </div>
     </div>
   </div>
 
@@ -359,7 +386,7 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
   <div class="screen" id="s-today">
     <div class="topbar">
       <div class="brand" style="font-size:20px;">PACE</div>
-      <div class="streak"><span class="flame">🔥</span> 12</div>
+      <div class="streak"><span class="flame-ico"></span> 12</div>
     </div>
     <div class="eyebrow">Today's Plan</div>
     <div class="scr-title">Boxing Hand Speed</div>
@@ -396,7 +423,7 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
       </div>
     </div>
     <div class="wk-ex" id="wk-ex">Shadow Boxing</div>
-    <div style="text-align:center;margin-top:-2px;"><span class="voice-tag" id="voice-tag">🔊 Coach is calling it out</span></div>
+    <div style="text-align:center;margin-top:-2px;"><span class="voice-tag" id="voice-tag">Coach is calling it out</span></div>
     <div class="wk-phase-sub" id="wk-phase-sub">45s work</div>
 
     <div class="ring-wrap">
@@ -415,7 +442,7 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
         <div class="upnext-l">Up Next</div>
         <div class="upnext-n" id="wk-upnext">Speed Bag · 30s</div>
       </div>
-      <span style="font-size:22px;">🥊</span>
+      
     </div>
     <div class="wk-ctrls">
       <button class="wk-btn" id="wk-pause" onclick="togglePause()">
@@ -453,7 +480,7 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
         <div class="upnext-l">Up Next</div>
         <div class="upnext-n">Speed Bag · 30s work</div>
       </div>
-      <span style="font-size:22px;">🥊</span>
+      
     </div>
     <div class="wk-ctrls">
       <button class="wk-btn primary" onclick="skipRest()">
@@ -468,17 +495,17 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
       <div class="ko-check"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
       <div class="ko-title">WORKOUT<br>COMPLETE</div>
-      <div class="ko-sub">That's how champions train. 🔥 13-day streak.</div>
+      <div class="ko-sub">That's how champions train. 13-day streak.</div>
       <div class="ko-stats">
-        <div class="ko-stat"><div class="ko-stat-v" id="ko-time">0:00</div><div class="ko-stat-l">⏱ Time</div></div>
-        <div class="ko-stat"><div class="ko-stat-v lime" id="ko-cals" style="color:var(--lime);">0</div><div class="ko-stat-l">🔥 Cals</div></div>
-        <div class="ko-stat"><div class="ko-stat-v" style="color:var(--orange);">142</div><div class="ko-stat-l">❤ Avg HR</div></div>
+        <div class="ko-stat"><div class="ko-stat-v" id="ko-time">0:00</div><div class="ko-stat-l">Time</div></div>
+        <div class="ko-stat"><div class="ko-stat-v lime" id="ko-cals" style="color:var(--lime);">0</div><div class="ko-stat-l">Cals</div></div>
+        <div class="ko-stat"><div class="ko-stat-v" style="color:var(--orange);">142</div><div class="ko-stat-l">Avg HR</div></div>
       </div>
       <div class="feel-q">How'd that feel?</div>
       <div class="feels">
-        <div class="feel" onclick="pickFeel(this)"><div class="feel-emo">😅</div><div class="feel-l">Too Easy</div></div>
-        <div class="feel sel" onclick="pickFeel(this)"><div class="feel-emo">💪</div><div class="feel-l">Just Right</div></div>
-        <div class="feel" onclick="pickFeel(this)"><div class="feel-emo">🥵</div><div class="feel-l">Too Hard</div></div>
+        <div class="feel" onclick="pickFeel(this)"><div class="feel-emo feel-easy"></div><div class="feel-l">Too Easy</div></div>
+        <div class="feel sel" onclick="pickFeel(this)"><div class="feel-emo feel-right"></div><div class="feel-l">Just Right</div></div>
+        <div class="feel" onclick="pickFeel(this)"><div class="feel-emo feel-hard"></div><div class="feel-l">Too Hard</div></div>
       </div>
       <button class="cta" onclick="go('progress')">Finish</button>
     </div>
@@ -488,14 +515,14 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
   <div class="screen" id="s-progress">
     <div class="topbar">
       <div class="brand" style="font-size:20px;">PACE</div>
-      <div class="streak"><span class="flame">🔥</span> 13</div>
+      <div class="streak"><span class="flame-ico"></span> 13</div>
     </div>
     <div class="eyebrow">This Week</div>
     <div class="scr-title">Progress that counts</div>
     <div class="scr-sub">Consistency is the only secret.</div>
 
     <div class="accountable">
-      <div class="acc-ico">🥊</div>
+      <div class="acc-ico acc-badge"></div>
       <div>
         <div class="acc-t">You're on a 13-day streak</div>
         <div class="acc-s">Missed a day? No problem — one make-up session this week keeps your belt. You've got this.</div>
@@ -527,20 +554,20 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
       <div class="rec-title">Recent Rounds</div>
       <div class="rec-all">View all</div>
     </div>
-    <div class="rec-row"><div class="rec-thumb">🥊</div><div class="rec-info"><div class="rec-name">Boxing Hand Speed</div><div class="rec-meta">Today · 24 min</div></div><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
-    <div class="rec-row"><div class="rec-thumb">🔥</div><div class="rec-info"><div class="rec-name">HIIT Full Body</div><div class="rec-meta">Yesterday · 28 min</div></div><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
-    <div class="rec-row"><div class="rec-thumb">🧘</div><div class="rec-info"><div class="rec-name">Core & Mobility</div><div class="rec-meta">Mon · 20 min</div></div><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+    <div class="rec-row"><div class="rec-thumb">S</div><div class="rec-info"><div class="rec-name">Boxing Hand Speed</div><div class="rec-meta">Today · 24 min</div></div><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+    <div class="rec-row"><div class="rec-thumb">H</div><div class="rec-info"><div class="rec-name">HIIT Full Body</div><div class="rec-meta">Yesterday · 28 min</div></div><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+    <div class="rec-row"><div class="rec-thumb">C</div><div class="rec-info"><div class="rec-name">Core & Mobility</div><div class="rec-meta">Mon · 20 min</div></div><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
   </div>
 
   <!-- ══ COACH OVERLAY ══ -->
   <div id="coach-overlay">
     <button class="coach-x" onclick="closeCoach()">✕</button>
     <div class="corner-orb"></div>
-    <div class="coach-say">"Keep those hands up."</div>
-    <div class="coach-say-sub">You're two rounds in and your speed's climbing. Stay sharp.</div>
-    <div class="cue"><div class="cue-ico">👟</div><div><div class="cue-t">Stay on your toes</div><div class="cue-s">Light feet, fast hands.</div></div></div>
-    <div class="cue"><div class="cue-ico">🥊</div><div><div class="cue-t">Quality over quantity</div><div class="cue-s">Crisp, sharp punches — don't rush.</div></div></div>
-    <div class="cue"><div class="cue-ico">🔥</div><div><div class="cue-t">You've got this</div><div class="cue-s">Finish strong. Last rounds count double.</div></div></div>
+    <div class="coach-say">"Stay with it."</div>
+    <div class="coach-say-sub">You're deep into this one and holding strong. Keep the pace.</div>
+    <div class="cue"><div class="cue-ico"></div><div><div class="cue-t">Control your breathing</div><div class="cue-s">Steady in, steady out.</div></div></div>
+    <div class="cue"><div class="cue-ico"></div><div><div class="cue-t">Quality over quantity</div><div class="cue-s">Clean reps beat rushed ones.</div></div></div>
+    <div class="cue"><div class="cue-ico"></div><div><div class="cue-t">You've got this</div><div class="cue-s">Finish strong. The last rounds count double.</div></div></div>
     <button class="mic-btn" onclick="micPulse(this)"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/></svg></button>
     <div class="mic-label">Tap to talk to your corner</div>
   </div>
@@ -570,8 +597,8 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 </div>
 
 <script>
-const screens=['home','chat','today','workout','rest','complete','progress'];
-const navMap={home:'n-home',chat:'n-home',today:'n-today',workout:'n-workout',rest:'n-workout',complete:'n-progress',progress:'n-progress'};
+const screens=['home','today','workout','rest','complete','progress'];
+const navMap={home:'n-home',today:'n-today',workout:'n-workout',rest:'n-workout',complete:'n-progress',progress:'n-progress'};
 let current='home';
 
 function go(name){
@@ -586,6 +613,7 @@ function go(name){
   if(name==='workout'||name==='rest'||name==='complete'||name==='chat') nav.classList.add('hidden');
   else nav.classList.remove('hidden');
   // side effects — the workout engine manages timing itself now
+  if(name==='home'){ document.getElementById('s-home').classList.remove('talking'); }
   if(name==='complete'){ stopTimer(); fireConfetti(); }
   if(name==='progress'){ renderProgress(); }
   const scr=document.getElementById('s-'+name); if(scr) scr.scrollTop=0;
@@ -610,7 +638,7 @@ function toggleVoice(){
   const tag=document.getElementById('voice-tag');
   if(tag){
     tag.classList.toggle('off', !voiceOn);
-    tag.textContent = voiceOn ? '🔊 Coach is calling it out' : '🔇 Voice muted';
+    tag.textContent = voiceOn ? 'Coach is calling it out' : 'Voice muted';
   }
   if(voiceOn) speak('Voice on.'); else speechSynthesis.cancel();
 }
@@ -715,7 +743,8 @@ function finishWorkout(){
 }
 
 // legacy entry points kept working
-function startWorkout(){ if(loadedWorkout) launchWorkout(loadedWorkout); else go('workout'); }
+function startWorkout(){ if(loadedWorkout) launchWorkout(loadedWorkout); else engageCoach(); }
+function resumeLast(){ if(loadedWorkout) launchWorkout(loadedWorkout); else engageCoach(); }
 
 // ── COACH ──
 function openCoach(){ document.getElementById('coach-overlay').classList.add('on'); }
@@ -726,6 +755,27 @@ document.getElementById('s-today') && (window.go=go);
 let chatStarted=false;
 let coachHistory=[];        // full conversation sent to the backend
 let loadedWorkout=null;     // the workout the coach last built
+
+// Morph the Home hero into the inline conversation (same screen).
+function engageCoach(){
+  const home=document.getElementById('s-home');
+  home.classList.add('talking');
+  // Seed the greeting once
+  const body=document.getElementById('chat-body');
+  if(body && !body.dataset.greeted){
+    body.dataset.greeted='1';
+    const streak=stats.streak||0;
+    const greet = streak>0
+      ? `Good to see you back — that's ${streak} day${streak===1?'':'s'} in a row. What are we training today? Tell me your mood, your time, your goal.`
+      : `Let's get to work. What are we training today? Tell me your mood, how much time you've got, and what you want to hit.`;
+    addCoachMsg(greet);
+    speak(greet, {rate:1.03});
+  }
+  setTimeout(()=>{ const inp=document.getElementById('chat-input'); if(inp) inp.focus(); }, 300);
+}
+function collapseCoach(){
+  document.getElementById('s-home').classList.remove('talking');
+}
 
 function quickSend(text){ addUserMsg(text); askCoach(text); }
 function sendChat(){
@@ -864,9 +914,9 @@ function recordSession(cals, workSec){
   stats.streak=streak;
   saveStats();
   // reflect streak in home + complete
-  document.querySelectorAll('.streak').forEach(s=>s.innerHTML=`<span class="flame">🔥</span> ${streak}`);
+  document.querySelectorAll('.streak').forEach(s=>s.innerHTML=`<span class="flame-ico"></span> ${streak}`);
   const koSub=document.querySelector('#s-complete .ko-sub');
-  if(koSub) koSub.textContent=`That's how champions train. 🔥 ${streak}-day streak.`;
+  if(koSub) koSub.textContent=`That's how champions train. ${streak}-day streak.`;
 }
 
 function renderProgress(){
@@ -898,7 +948,7 @@ function renderProgress(){
 
 // ── INIT ──
 loadStats();
-document.querySelectorAll('.streak').forEach(s=>s.innerHTML=`<span class="flame">🔥</span> ${stats.streak||0}`);
+document.querySelectorAll('.streak').forEach(s=>s.innerHTML=`<span class="flame-ico"></span> ${stats.streak||0}`);
 if('speechSynthesis' in window){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices(); }
 if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{})); }
 </script>
