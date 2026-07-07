@@ -145,6 +145,12 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 .c-plan-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(196,255,61,.16);border-radius:99px;padding:3px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--lime);margin-bottom:10px;}
 .c-plan-name{font-family:'Barlow Condensed';font-weight:800;font-size:22px;line-height:1;margin-bottom:8px;}
 .c-plan-line{font-size:13px;color:var(--bone);opacity:.85;margin-bottom:3px;}
+.plan-ex-list{margin-top:12px;display:flex;flex-direction:column;gap:6px;}
+.plan-ex{display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:11px;padding:9px 11px;}
+.plan-ex-n{font-family:'Barlow Condensed';font-weight:800;font-size:15px;color:var(--lime);width:18px;text-align:center;flex-shrink:0;}
+.plan-ex-info{flex:1;min-width:0;}
+.plan-ex-name{font-size:14px;font-weight:600;color:var(--bone);}
+.plan-ex-meta{font-size:11px;color:var(--steel);margin-top:1px;}
 .c-plan-cta{margin-top:14px;width:100%;background:var(--lime);color:var(--canvas);border:none;border-radius:13px;
   font-family:'Barlow Condensed';font-weight:800;font-size:17px;letter-spacing:.06em;text-transform:uppercase;padding:14px;cursor:pointer;transition:transform .12s;}
 .c-plan-cta:active{transform:scale(.98);}
@@ -164,7 +170,7 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 .chat-send{background:var(--lime);}
 .chat-send svg{width:20px;height:20px;fill:var(--canvas);}
 .chat-mic:active,.chat-send:active{transform:scale(.92);}
-#s-chat{padding-bottom:calc(var(--safe-bot) + 16px);}
+#s-chat{padding-bottom:calc(var(--safe-bot) + 78px);}
 .resume{margin-top:auto;width:100%;background:var(--card);border:1px solid var(--line);border-radius:16px;
   padding:16px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color .2s;}
 .resume:active{border-color:var(--lime);}
@@ -177,6 +183,20 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 .eyebrow{font-family:'Barlow Condensed';text-transform:uppercase;letter-spacing:.2em;font-size:11px;color:var(--lime);font-weight:600;margin-bottom:6px;}
 .scr-title{font-family:'Barlow Condensed';font-weight:800;font-size:32px;line-height:1;margin-bottom:4px;}
 .scr-sub{color:var(--steel);font-size:14px;margin-bottom:22px;}
+
+/* workout library */
+.lib-section-title{font-family:'Barlow Condensed';text-transform:uppercase;letter-spacing:.14em;font-size:12px;color:var(--steel);margin:6px 0 12px;}
+.lib-empty{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;font-size:13px;color:var(--steel);line-height:1.55;text-align:center;}
+.lib-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer;transition:border-color .18s;}
+.lib-card:active{border-color:var(--lime);}
+.lib-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px;}
+.lib-card-name{font-family:'Barlow Condensed';font-weight:800;font-size:19px;line-height:1;}
+.lib-card-fav{width:30px;height:30px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;}
+.lib-card-fav svg{width:19px;height:19px;stroke:var(--steel);fill:none;stroke-width:2;}
+.lib-card-fav.on svg{fill:var(--gold);stroke:var(--gold);}
+.lib-card-meta{font-size:12px;color:var(--steel);margin-bottom:8px;}
+.lib-card-ex{font-size:12px;color:var(--bone);opacity:.75;line-height:1.5;}
+.lib-card-when{font-size:11px;color:var(--steel);margin-top:8px;}
 
 /* ── TODAY ── */
 .plan-badge{display:inline-flex;align-items:center;gap:6px;background:var(--lime-dim);border:1px solid rgba(196,255,61,.3);
@@ -223,6 +243,11 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 .ring-wrap{position:relative;width:min(74vw,300px);height:min(74vw,300px);margin:24px auto;display:flex;align-items:center;justify-content:center;}
 .ring-wrap svg{position:absolute;inset:0;transform:rotate(-90deg);}
 .ring-num{font-family:'Barlow Condensed';font-weight:800;font-size:min(30vw,120px);line-height:1;letter-spacing:-.02em;}
+.ring-tap{cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.ring-tap:active{transform:scale(.985);}
+.ring-hint{position:absolute;bottom:30%;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;transition:opacity .3s;}
+.ring-wrap.paused .ring-num{opacity:.4;}
+.ring-wrap.paused .ring-hint{color:var(--lime);opacity:1;}
 .ring-hr{position:absolute;bottom:22%;display:flex;align-items:center;gap:5px;color:var(--orange);font-weight:700;font-size:15px;}
 .ring-hr svg{width:16px;height:16px;fill:var(--orange);animation:beat 1s ease-in-out infinite;}
 @keyframes beat{0%,100%{transform:scale(1);}15%{transform:scale(1.25);}30%{transform:scale(1);}}
@@ -407,27 +432,19 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
   <div class="screen" id="s-today">
     <div class="topbar">
       <div class="brand" style="font-size:20px;">PACE</div>
-      <div class="streak"><span class="flame-ico"></span> 12</div>
+      <div class="streak"><span class="flame-ico"></span> <span class="streak-n2">0</span></div>
     </div>
-    <div class="eyebrow">Today's Plan</div>
-    <div class="scr-title">Boxing Hand Speed</div>
-    <div class="scr-sub">Built for you — fast hands, sharp feet.</div>
-    <div class="plan-badge">✦ AI Recommended</div>
-    <div class="plan-stats">
-      <div class="plan-stat"><div class="plan-stat-v">6</div><div class="plan-stat-l">Rounds</div></div>
-      <div class="plan-stat"><div class="plan-stat-v lime">24</div><div class="plan-stat-l">Minutes</div></div>
-      <div class="plan-stat"><div class="plan-stat-v orange">HIGH</div><div class="plan-stat-l">Intensity</div></div>
+    <div class="eyebrow">Your Workouts</div>
+    <div class="scr-title">Library</div>
+    <div class="scr-sub">Repeat a past session, or start something new.</div>
+
+    <button class="cta" style="margin-bottom:10px;" onclick="go('home')">Ask your coach for a new workout</button>
+    <button class="cta-ghost" style="margin-bottom:20px;" onclick="openQuickTimer()">Quick interval timer</button>
+
+    <div class="lib-section-title">Recent</div>
+    <div id="recent-list">
+      <div class="lib-empty">No workouts yet. Ask your coach to build your first session — it'll show up here so you can repeat it anytime.</div>
     </div>
-    <div class="ex-list">
-      <div class="ex-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Jump Rope</div><div class="ex-timing">45s work · 15s rest</div></div></div>
-      <div class="ex-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Shadow Boxing</div><div class="ex-timing">45s work · 15s rest</div></div></div>
-      <div class="ex-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Speed Bag</div><div class="ex-timing">30s work · 30s rest</div></div></div>
-      <div class="ex-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Double-End Bag</div><div class="ex-timing">45s work · 15s rest</div></div></div>
-      <div class="ex-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Plyo Push-Ups</div><div class="ex-timing">30s work · 30s rest</div></div></div>
-      <div class="ex-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Core Plank</div><div class="ex-timing">45s work · 15s rest</div></div></div>
-    </div>
-    <button class="cta" onclick="startWorkout()">Start Workout</button>
-    <button class="cta-ghost" onclick="go('coach-demo')">Adjust with coach</button>
   </div>
 
   <!-- ══ WORKOUT ══ -->
@@ -447,7 +464,7 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
     <div style="text-align:center;margin-top:-2px;"><span class="voice-tag" id="voice-tag">Coach is calling it out</span></div>
     <div class="wk-phase-sub" id="wk-phase-sub">45s work</div>
 
-    <div class="ring-wrap">
+    <div class="ring-wrap ring-tap" onclick="togglePause()" role="button" aria-label="Tap to pause or resume">
       <svg viewBox="0 0 300 300">
         <circle cx="150" cy="150" r="132" fill="none" stroke="rgba(244,239,230,.08)" stroke-width="14"/>
         <circle id="wk-ring" cx="150" cy="150" r="132" fill="none" stroke="var(--lime)" stroke-width="14"
@@ -455,6 +472,7 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
           style="transition:stroke-dashoffset 1s linear, stroke .4s;"/>
       </svg>
       <div class="ring-num display" id="wk-num">28</div>
+      <div class="ring-hint" id="ring-hint">Tap ring to pause</div>
       <div class="ring-hr"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C.5 8 2 4 6 4c2 0 3 1 4 2 1-1 2-2 4-2 4 0 5.5 4 3.5 8-2.5 4.5-9.5 9-9.5 9z"/></svg> 142</div>
     </div>
 
@@ -486,7 +504,7 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
     <div class="wk-ex" style="color:var(--orange);">Breathe</div>
     <div class="wk-phase-sub">Reset. Shake it out.</div>
 
-    <div class="ring-wrap">
+    <div class="ring-wrap ring-tap" onclick="togglePause()" role="button" aria-label="Tap to pause or resume">
       <svg viewBox="0 0 300 300">
         <circle cx="150" cy="150" r="132" fill="none" stroke="rgba(244,239,230,.08)" stroke-width="14"/>
         <circle id="rest-ring" cx="150" cy="150" r="132" fill="none" stroke="var(--orange)" stroke-width="14"
@@ -494,6 +512,7 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
           style="transition:stroke-dashoffset 1s linear;"/>
       </svg>
       <div class="ring-num display" id="rest-num">10</div>
+      <div class="ring-hint" id="ring-hint-rest">Tap ring to pause</div>
     </div>
 
     <div class="upnext">
@@ -631,12 +650,13 @@ function go(name){
   const navId=navMap[name]; if(navId) document.getElementById(navId).classList.add('on');
   // hide nav during focused timer screens
   const nav=document.getElementById('nav');
-  if(name==='workout'||name==='rest'||name==='complete'||name==='chat') nav.classList.add('hidden');
+  if(name==='workout'||name==='rest'||name==='complete') nav.classList.add('hidden');
   else nav.classList.remove('hidden');
   // side effects — the workout engine manages timing itself now
   if(name==='home'){ document.getElementById('s-home').classList.remove('talking'); }
   if(name==='complete'){ stopTimer(); fireConfetti(); }
   if(name==='progress'){ renderProgress(); }
+  if(name==='today'){ renderRecent(); }
   if(name==='chat'){ setTimeout(()=>{ const i=document.getElementById('chat-input'); if(i) i.focus(); }, 350); }
   const scr=document.getElementById('s-'+name); if(scr) scr.scrollTop=0;
 }
@@ -722,6 +742,9 @@ function startPhase(){
   stopTimer(); lastSpokenSecond=null;
   const ph=phases[pIdx]; if(!ph){ finishWorkout(); return; }
   mode=ph.type; tTotal=ph.dur; tLeft=ph.dur; paused=false;
+  document.querySelectorAll('.ring-wrap').forEach(r=>r.classList.remove('paused'));
+  const h1=document.getElementById('ring-hint'); if(h1) h1.textContent='Tap ring to pause';
+  const h2=document.getElementById('ring-hint-rest'); if(h2) h2.textContent='Tap ring to pause';
 
   if(ph.type==='work'){
     go('workout');
@@ -783,7 +806,13 @@ function updateRing(){
 }
 function togglePause(){
   paused=!paused;
-  document.getElementById('wk-pause-l').textContent=paused?'Resume':'Pause';
+  const pl=document.getElementById('wk-pause-l'); if(pl) pl.textContent=paused?'Resume':'Pause';
+  // update both rings' paused visual + hint text
+  document.querySelectorAll('.ring-wrap').forEach(r=>r.classList.toggle('paused', paused));
+  const hintText = paused ? 'Paused — tap to resume' : 'Tap ring to pause';
+  const h1=document.getElementById('ring-hint'); if(h1) h1.textContent=hintText;
+  const h2=document.getElementById('ring-hint-rest'); if(h2) h2.textContent=hintText;
+  if(navigator.vibrate) navigator.vibrate(paused?[30,40,30]:20);
   speak(paused?'Paused.':'Back to work.', {rate:1.05});
 }
 function nextPhase(){ stopTimer(); pIdx++; startPhase(); }
@@ -906,10 +935,16 @@ function renderPlan(w){
   const totalSets=list.reduce((a,e)=>a+e.sets,0);
   const totalSecs=list.reduce((a,e)=>a+e.sets*(e.work+e.rest),0);
   const mins=Math.max(1,Math.round(totalSecs/60));
-  // Display each exercise, showing sets when >1
-  const exLines=list.map(e=> e.sets>1 ? `${e.name} (${e.sets}×${e.work}s)` : e.name);
-  const shown=exLines.slice(0,4).join(' · ')+(exLines.length>4?` · +${exLines.length-4} more`:'');
   const unit = list.length===1 ? `${totalSets} set${totalSets>1?'s':''}` : `${list.length} exercises · ${totalSets} sets`;
+
+  // Full itemized list — every exercise on its own line, numbered, with timing.
+  const rows = list.map((e,i)=>{
+    const setLabel = e.sets>1 ? `${e.sets} sets · ${e.work}s / ${e.rest}s rest` : `${e.work}s work · ${e.rest}s rest`;
+    return `<div class="plan-ex">
+      <div class="plan-ex-n">${i+1}</div>
+      <div class="plan-ex-info"><div class="plan-ex-name">${e.name}</div><div class="plan-ex-meta">${setLabel}</div></div>
+    </div>`;
+  }).join('');
 
   const body=document.getElementById('chat-body');
   const card=document.createElement('div'); card.className='c-plan';
@@ -917,7 +952,7 @@ function renderPlan(w){
     <div class="c-plan-badge">✦ Built for you · right now</div>
     <div class="c-plan-name">${w.name||'Your Session'}</div>
     <div class="c-plan-line">${unit} · ${mins} min · ${w.intensity||'MEDIUM'} intensity</div>
-    <div class="c-plan-line" style="margin-top:6px;">${shown}</div>
+    <div class="plan-ex-list">${rows}</div>
     <button class="c-plan-cta">Start this session</button>
   `;
   card.querySelector('.c-plan-cta').addEventListener('click', ()=>launchWorkout(w));
@@ -964,12 +999,13 @@ function fireConfetti(){
 }
 
 // ── PERSISTENCE + PROGRESS ──
-let stats={sessions:0, cals:0, workSec:0, days:{}, streak:0, lastDay:null};
+let stats={sessions:0, cals:0, workSec:0, days:{}, streak:0, lastDay:null, history:[]};
 
 function loadStats(){
   try{
     const s=JSON.parse(localStorage.getItem('pace-stats')||'null');
     if(s) stats=Object.assign(stats,s);
+    if(!Array.isArray(stats.history)) stats.history=[];
   }catch(e){}
 }
 function saveStats(){
@@ -977,10 +1013,30 @@ function saveStats(){
 }
 function todayKey(){ const d=new Date(); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
 
+// Save the completed workout to history (most recent first, capped at 30).
+function saveWorkoutToHistory(w){
+  if(!w) return;
+  const entry={
+    name: w.name || 'Session',
+    intensity: w.intensity || 'MEDIUM',
+    exercises: (w.exercises||[]).map(e=> typeof e==='string'
+      ? {name:e,sets:1,work:(w.work||40),rest:(w.rest||20)}
+      : {name:String(e.name||'Work'),sets:Math.max(1,parseInt(e.sets)||1),work:Math.max(5,parseInt(e.work)||40),rest:Math.max(0,parseInt(e.rest!=null?e.rest:20))}),
+    coachingCues: w.coachingCues||[],
+    ts: Date.now(),
+    fav: false
+  };
+  stats.history.unshift(entry);
+  if(stats.history.length>30) stats.history=stats.history.slice(0,30);
+  saveStats();
+}
+
 function recordSession(cals, workSec){
   stats.sessions++; stats.cals+=cals; stats.workSec+=workSec;
   const k=todayKey();
   stats.days[k]=(stats.days[k]||0)+1;
+  // save the workout that was just completed
+  if(activeWorkout) saveWorkoutToHistory(activeWorkout);
   // streak: consecutive days with >=1 session
   const d=new Date(); let streak=0;
   for(let i=0;i<365;i++){
@@ -989,10 +1045,61 @@ function recordSession(cals, workSec){
   }
   stats.streak=streak;
   saveStats();
-  // reflect streak in home + complete
   document.querySelectorAll('.streak').forEach(s=>s.innerHTML=`<span class="flame-ico"></span> ${streak}`);
   const koSub=document.querySelector('#s-complete .ko-sub');
   if(koSub) koSub.textContent=`That's how champions train. ${streak}-day streak.`;
+}
+
+// ── WORKOUT LIBRARY (recent + favorites) ──
+function fmtWhen(ts){
+  const diff=Date.now()-ts, day=86400000;
+  const d=new Date(ts);
+  if(diff<day && new Date().getDate()===d.getDate()) return 'Today';
+  if(diff<2*day) return 'Yesterday';
+  if(diff<7*day) return d.toLocaleDateString(undefined,{weekday:'long'});
+  return d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+}
+
+function renderRecent(){
+  document.querySelectorAll('.streak-n2').forEach(e=>e.textContent=stats.streak||0);
+  const wrap=document.getElementById('recent-list'); if(!wrap) return;
+  const hist=stats.history||[];
+  if(!hist.length){
+    wrap.innerHTML='<div class="lib-empty">No workouts yet. Ask your coach to build your first session — it\u2019ll show up here so you can repeat it anytime.</div>';
+    return;
+  }
+  wrap.innerHTML=hist.map((w,i)=>{
+    const sets=w.exercises.reduce((a,e)=>a+(e.sets||1),0);
+    const mins=Math.max(1,Math.round(w.exercises.reduce((a,e)=>a+(e.sets||1)*((e.work||40)+(e.rest||20)),0)/60));
+    const unit = w.exercises.length===1 ? `${sets} set${sets>1?'s':''}` : `${w.exercises.length} exercises · ${sets} sets`;
+    const exNames=w.exercises.map(e=>e.name).join(' · ');
+    return `<div class="lib-card" onclick="repeatWorkout(${i})">
+      <div class="lib-card-top">
+        <div class="lib-card-name">${w.name}</div>
+        <div class="lib-card-fav ${w.fav?'on':''}" onclick="event.stopPropagation();toggleFav(${i})" aria-label="Favorite">
+          <svg viewBox="0 0 24 24"><polygon points="12 2 15 9 22 9 16 14 18 21 12 17 6 21 8 14 2 9 9 9"/></svg>
+        </div>
+      </div>
+      <div class="lib-card-meta">${unit} · ${mins} min · ${w.intensity||'MEDIUM'} intensity</div>
+      <div class="lib-card-ex">${exNames}</div>
+      <div class="lib-card-when">${fmtWhen(w.ts)}</div>
+    </div>`;
+  }).join('');
+}
+
+function repeatWorkout(i){
+  const w=(stats.history||[])[i]; if(!w) return;
+  // launch a copy so edits/repeats don't mutate history
+  launchWorkout(JSON.parse(JSON.stringify(w)));
+}
+function toggleFav(i){
+  if(!stats.history[i]) return;
+  stats.history[i].fav=!stats.history[i].fav;
+  saveStats(); renderRecent();
+}
+function openQuickTimer(){
+  // Placeholder until Stage 4 (manual timer) is built.
+  alert('Quick interval timer is coming next. For now, ask your coach for a workout.');
 }
 
 function renderProgress(){
