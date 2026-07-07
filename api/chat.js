@@ -40,16 +40,27 @@ You do TWO things:
 2) BUILDING A WORKOUT — when the user wants a session (they mention a workout, a sport, a
    mood + intent to train, a duration, etc.), respond with ONLY a JSON object, no prose and
    no markdown fences, in EXACTLY this shape:
-{"type":"workout","intro":"one short confirming + encouraging line, spoken to the user, no emoji","name":"short workout name","rounds":number,"work":number,"rest":number,"intensity":"LOW|MEDIUM|HIGH","exercises":["exercise 1","exercise 2", ...],"coachingCues":["short cue 1","short cue 2","short cue 3"],"why":"1 sentence on why this fits them"}
+{"type":"workout","intro":"one short confirming + encouraging line, spoken to the user, no emoji","name":"short workout name","intensity":"LOW|MEDIUM|HIGH","exercises":[{"name":"exercise name","sets":number,"work":number,"rest":number}, ...],"coachingCues":["short cue 1","short cue 2","short cue 3"],"why":"1 sentence on why this fits them"}
+
+EXERCISE STRUCTURE:
+- Each exercise is an object with: "name" (short, called out loud), "sets" (how many
+  times to repeat this exercise), "work" (seconds of effort per set), "rest" (seconds of
+  rest after each set).
+- DEFAULT: if the user does NOT ask for multiple sets, give each exercise "sets": 1 and
+  build a normal circuit of different exercises (one pass through).
+- WHEN THE USER ASKS FOR SETS: honor it exactly. Example: "1 round of pull-ups, 4 sets,
+  40 seconds work 40 seconds rest" becomes a single exercise
+  {"name":"Pull-ups","sets":4,"work":40,"rest":40}. The user dictates how many sets of
+  each exercise they want.
+- Users can mix: some exercises with multiple sets, others with 1.
 
 CRITICAL RULES for workouts:
-- "rounds" MUST exactly equal the length of the "exercises" array. Count them and match.
 - Exercise names are called out loud, so keep them short and clear (e.g. "Speed Bag",
-  "Jab-Cross-Hook", "Burpees", "Recovery Jog"). No emoji anywhere.
+  "Jab-Cross-Hook", "Burpees", "Pull-ups"). No emoji anywhere.
 - Read the user's MOOD and NEEDS. Tired/low-energy: shorter, lower intensity, restorative.
   Fired up / short on time: sharp and intense. Adapt genuinely to what they say.
 - The intro line should confirm what they asked for, then hype them up briefly.
-- "work" and "rest" are per-interval seconds. Pick sensible values for the goal and mood.
+- "work" and "rest" are per-set seconds. Pick sensible values for the goal and mood.
 - coachingCues are short hands-free lines the coach can say during the workout. No emoji.
 
 Use the whole conversation as context — never make the user repeat themselves.`;
@@ -89,10 +100,20 @@ Use the whole conversation as context — never make the user repeat themselves.
       try {
         const parsed = JSON.parse(match[0]);
         if (parsed && parsed.type === 'workout') {
-          // Safety net: force rounds to equal exercise count.
-          if (Array.isArray(parsed.exercises) && parsed.exercises.length) {
-            parsed.rounds = parsed.exercises.length;
-          }
+          // Normalize exercises: support both new object form and any legacy string form.
+          let ex = Array.isArray(parsed.exercises) ? parsed.exercises : [];
+          ex = ex.map(e => {
+            if (typeof e === 'string') return { name: e, sets: 1, work: parsed.work || 40, rest: parsed.rest || 20 };
+            return {
+              name: String(e.name || 'Work'),
+              sets: Math.max(1, parseInt(e.sets) || 1),
+              work: Math.max(5, parseInt(e.work) || parsed.work || 40),
+              rest: Math.max(0, parseInt(e.rest != null ? e.rest : (parsed.rest != null ? parsed.rest : 20))),
+            };
+          });
+          parsed.exercises = ex;
+          // total sets across the whole session (used for display)
+          parsed.totalSets = ex.reduce((a, e) => a + e.sets, 0);
           workout = parsed;
         }
       } catch (e) { /* not JSON — treat as chat */ }
