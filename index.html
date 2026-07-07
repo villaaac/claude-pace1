@@ -84,6 +84,21 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 .engage-btn svg{width:22px;height:22px;flex-shrink:0;}
 .engage-hint{margin-top:14px;font-size:13px;color:var(--steel);}
 
+/* Stage 1: the ask box on Home */
+.ask-box{margin-top:18px;width:100%;max-width:360px;display:flex;align-items:center;gap:8px;
+  background:var(--card);border:1px solid var(--line);border-radius:16px;padding:6px 6px 6px 16px;
+  transition:border-color .2s;}
+.ask-box:focus-within{border-color:var(--lime);}
+.ask-input{flex:1;background:transparent;border:none;outline:none;color:var(--bone);font-size:15px;font-family:'Barlow';padding:10px 0;}
+.ask-input::placeholder{color:var(--steel);}
+.ask-mic,.ask-send{width:42px;height:42px;border-radius:12px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .12s;}
+.ask-mic{background:rgba(255,255,255,.06);}
+.ask-mic svg{width:19px;height:19px;fill:var(--bone);}
+.ask-send{background:var(--lime);}
+.ask-send svg{width:19px;height:19px;fill:var(--canvas);}
+.ask-mic:active,.ask-send:active{transform:scale(.92);}
+.ask-chips{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:360px;}
+
 /* styled gold flame (replaces emoji) */
 .flame-ico{display:inline-block;width:10px;height:13px;position:relative;flex-shrink:0;
   background:linear-gradient(to top, var(--gold), #ffd873);
@@ -329,18 +344,32 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
       <div class="streak" id="home-streak"><span class="flame-ico"></span> <span id="streak-n">0</span></div>
     </div>
 
-    <!-- HERO (collapses when the conversation opens) -->
     <div class="home-hero" id="home-hero">
       <div class="home-kicker">Your corner is ready</div>
       <div class="home-title">WHAT ARE WE<br>TRAINING<br>TODAY?</div>
       <div class="home-sub">Tell your coach your mood, your time, your goal — get a session built for right now.</div>
-      <button class="engage-btn" onclick="engageCoach()">
-        <span class="engage-orb"></span>
-        <span class="engage-txt">Talk to your coach</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </button>
-      <div class="engage-hint">or hold the mic to talk hands-free</div>
+
+      <!-- Stage 1: the ask happens right here on Home -->
+      <div class="ask-box" id="ask-box">
+        <input type="text" class="ask-input" id="home-ask" placeholder="Tell your coach what you need…"
+          onkeydown="if(event.key==='Enter')submitAsk()">
+        <button class="ask-mic" onclick="micPulse(this)" aria-label="Voice">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/></svg>
+        </button>
+        <button class="ask-send" onclick="submitAsk()" aria-label="Send">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+        </button>
+      </div>
+
+      <!-- quick starting points -->
+      <div class="ask-chips">
+        <button class="chip" onclick="submitAsk('I\'m fired up — hit me hard')">Fired up</button>
+        <button class="chip" onclick="submitAsk('Bit tired but want to move')">Low energy</button>
+        <button class="chip" onclick="submitAsk('Quick 15 minute session')">Quick 15</button>
+        <button class="chip" onclick="submitAsk('Surprise me with something new')">Surprise me</button>
+      </div>
     </div>
+
     <div class="resume" id="home-resume" onclick="resumeLast()" style="display:none;">
       <div class="resume-l">
         <div class="resume-t">Resume last workout</div>
@@ -348,37 +377,29 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
       </div>
       <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
+  </div>
 
-    <!-- CONVERSATION (hidden until engaged; appears inline, same screen) -->
-    <div class="convo" id="convo">
-      <div class="convo-head">
-        <button class="chat-back" onclick="collapseCoach()" aria-label="Back">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <div class="chat-coach">
-          <span class="chat-coach-orb"></span>
-          <div>
-            <div class="chat-coach-name">Your Coach</div>
-            <div class="chat-coach-status">Ready when you are</div>
-          </div>
+  <!-- ══ CONVERSATION (dedicated coach's room — Stage 2) ══ -->
+  <div class="screen" id="s-chat">
+    <div class="convo-head">
+      <button class="chat-back" onclick="go('home')" aria-label="Back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="chat-coach">
+        <span class="chat-coach-orb"></span>
+        <div>
+          <div class="chat-coach-name">Your Coach</div>
+          <div class="chat-coach-status">Ready when you are</div>
         </div>
       </div>
+    </div>
 
-      <div class="chat-body" id="chat-body"></div>
+    <div class="chat-body" id="chat-body"></div>
 
-      <div class="chips" id="chat-chips">
-        <button class="chip" onclick="quickSend('I\'m fired up — hit me hard')">Fired up</button>
-        <button class="chip" onclick="quickSend('Bit tired but want to move')">Low energy</button>
-        <button class="chip" onclick="quickSend('Quick 15 minute session')">Quick 15</button>
-        <button class="chip" onclick="quickSend('Full body, medium intensity')">Full body</button>
-        <button class="chip" onclick="quickSend('Surprise me with something new')">Surprise me</button>
-      </div>
-
-      <div class="chat-input-row">
-        <input type="text" class="chat-input" id="chat-input" placeholder="Tell your coach what you need…" onkeydown="if(event.key==='Enter')sendChat()">
-        <button class="chat-mic" onclick="micPulse(this)" aria-label="Voice"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/></svg></button>
-        <button class="chat-send" onclick="sendChat()" aria-label="Send"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
-      </div>
+    <div class="chat-input-row">
+      <input type="text" class="chat-input" id="chat-input" placeholder="Tell your coach what you need…" onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="chat-mic" onclick="micPulse(this)" aria-label="Voice"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/></svg></button>
+      <button class="chat-send" onclick="sendChat()" aria-label="Send"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
     </div>
   </div>
 
@@ -597,8 +618,8 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 </div>
 
 <script>
-const screens=['home','today','workout','rest','complete','progress'];
-const navMap={home:'n-home',today:'n-today',workout:'n-workout',rest:'n-workout',complete:'n-progress',progress:'n-progress'};
+const screens=['home','chat','today','workout','rest','complete','progress'];
+const navMap={home:'n-home',chat:'n-home',today:'n-today',workout:'n-workout',rest:'n-workout',complete:'n-progress',progress:'n-progress'};
 let current='home';
 
 function go(name){
@@ -616,6 +637,7 @@ function go(name){
   if(name==='home'){ document.getElementById('s-home').classList.remove('talking'); }
   if(name==='complete'){ stopTimer(); fireConfetti(); }
   if(name==='progress'){ renderProgress(); }
+  if(name==='chat'){ setTimeout(()=>{ const i=document.getElementById('chat-input'); if(i) i.focus(); }, 350); }
   const scr=document.getElementById('s-'+name); if(scr) scr.scrollTop=0;
 }
 
@@ -655,20 +677,45 @@ let cuePool=[];
 // Build a phase list (work/rest alternating) from a coach workout object.
 function launchWorkout(w){
   activeWorkout=w;
-  cuePool=(w.coachingCues&&w.coachingCues.length)?w.coachingCues.slice():['Stay sharp.','Keep your form.','You\u2019ve got this.'];
-  const work=Math.max(5, w.work||40);
-  const rest=Math.max(0, w.rest||20);
-  const list=(w.exercises&&w.exercises.length)?w.exercises:['Work'];
+  cuePool=(w.coachingCues&&w.coachingCues.length)?w.coachingCues.slice():['Stay with it.','Keep your form.','You\u2019ve got this.'];
+  // Normalize exercises into {name,sets,work,rest} objects (supports legacy strings)
+  const list=(w.exercises&&w.exercises.length)?w.exercises:[{name:'Work',sets:1,work:(w.work||40),rest:(w.rest||20)}];
+  const norm=list.map(e=> typeof e==='string'
+    ? {name:e, sets:1, work:(w.work||40), rest:(w.rest||20)}
+    : {name:String(e.name||'Work'), sets:Math.max(1,parseInt(e.sets)||1), work:Math.max(5,parseInt(e.work)||40), rest:Math.max(0,parseInt(e.rest!=null?e.rest:20))});
+
+  // Build a flat phase list: each exercise runs its sets (work + rest between sets).
   phases=[];
-  list.forEach((ex,i)=>{
-    phases.push({type:'work', name:ex, dur:work, round:i+1, total:list.length});
-    if(i<list.length-1) phases.push({type:'rest', name:'Rest', dur:rest, nextName:list[i+1], round:i+1, total:list.length});
+  const totalExercises=norm.length;
+  norm.forEach((ex,ei)=>{
+    for(let s=1;s<=ex.sets;s++){
+      phases.push({
+        type:'work', name:ex.name, dur:ex.work,
+        exIndex:ei+1, exTotal:totalExercises,
+        set:s, sets:ex.sets, multiSet: ex.sets>1
+      });
+      // rest after each set, unless it's the very last set of the very last exercise
+      const isLastSet=(s===ex.sets);
+      const isLastExercise=(ei===totalExercises-1);
+      if(!(isLastSet && isLastExercise)){
+        const nextName = isLastSet ? (norm[ei+1] ? norm[ei+1].name : null) : ex.name;
+        const nextIsNewEx = isLastSet;
+        phases.push({type:'rest', name:'Rest', dur:ex.rest, nextName, nextIsNewEx,
+          exIndex:ei+1, exTotal:totalExercises, set:s, sets:ex.sets, multiSet: ex.sets>1});
+      }
+    }
   });
+
   pIdx=0; sessionStart=Date.now();
-  if('speechSynthesis' in window){ speak(' '); } // unlock audio on gesture
-  const cb=document.getElementById('coach-bubble');
+  if('speechSynthesis' in window){ speak(' '); }
   go('workout');
   startPhase();
+}
+
+// Build a short label like "Round 2 of 5" or "Pull-ups · Set 2 of 4"
+function phaseLabel(ph){
+  if(ph.multiSet) return `${ph.name} · Set ${ph.set} of ${ph.sets}`;
+  return `Round ${ph.exIndex} of ${ph.exTotal}`;
 }
 
 function startPhase(){
@@ -678,18 +725,32 @@ function startPhase(){
 
   if(ph.type==='work'){
     go('workout');
-    document.getElementById('wk-round').textContent=`Round ${ph.round} of ${ph.total}`;
+    document.getElementById('wk-round').textContent=phaseLabel(ph);
     document.getElementById('wk-ex').textContent=ph.name;
     document.getElementById('wk-phase-sub').textContent=`${ph.dur}s work`;
     const nextRest=phases[pIdx+1];
-    document.getElementById('wk-upnext').textContent = nextRest&&nextRest.nextName ? `${nextRest.nextName}` : 'Finish strong';
+    let upNext='Finish strong';
+    if(nextRest){
+      if(nextRest.type==='rest' && !nextRest.nextIsNewEx) upNext=`${ph.name} · Set ${ph.set+1}`;
+      else if(nextRest.nextName) upNext=nextRest.nextName;
+    }
+    document.getElementById('wk-upnext').textContent=upNext;
     const pl=document.getElementById('wk-pause-l'); if(pl) pl.textContent='Pause';
-    speak(`Round ${ph.round}. ${ph.name}. Let's work.`, {rate:1.05, pitch:1.05});
+    // Voice: announce set if multi-set, else the round/exercise
+    const say = ph.multiSet
+      ? `${ph.name}. Set ${ph.set} of ${ph.sets}. Let's work.`
+      : `${ph.name}. Let's work.`;
+    speak(say, {rate:1.05, pitch:1.05});
   } else {
     go('rest');
-    document.querySelector('#s-rest .wk-round').textContent=`Rest · Round ${ph.round} of ${ph.total}`;
-    document.querySelector('#s-rest .upnext-n').textContent = ph.nextName ? `${ph.nextName}` : 'Last round';
-    speak(`Rest. Breathe.${ph.nextName?' Up next, '+ph.nextName+'.':''}`, {rate:1, pitch:.98});
+    document.querySelector('#s-rest .wk-round').textContent=`Rest · ${phaseLabel(phases[pIdx-1]||ph)}`;
+    let nextLabel='Last round';
+    if(ph.nextIsNewEx && ph.nextName) nextLabel=ph.nextName;
+    else if(!ph.nextIsNewEx) nextLabel=`${ph.name} · Set ${ph.set+1}`;
+    document.querySelector('#s-rest .upnext-n').textContent=nextLabel;
+    const sayNext = ph.nextIsNewEx && ph.nextName ? ` Up next, ${ph.nextName}.`
+                  : (!ph.nextIsNewEx ? ` Next set coming.` : '');
+    speak(`Rest. Breathe.${sayNext}`, {rate:1, pitch:.98});
   }
   updateRing();
   tId=setInterval(tick,1000);
@@ -705,7 +766,7 @@ function tick(){
     speak(String(tLeft), {rate:1.2, pitch: tLeft===1?1.3:1.0});
   }
   if(mode==='work' && tLeft===Math.floor(tTotal/2) && cuePool.length){
-    const cue=cuePool[(phases[pIdx].round-1)%cuePool.length];
+    const cue=cuePool[(pIdx)%cuePool.length];
     speak(cue, {rate:1.05, pitch:1.05});
   }
 }
@@ -732,9 +793,9 @@ function finishWorkout(){
   stopTimer();
   const elapsed=Math.round((Date.now()-sessionStart)/1000);
   const mins=Math.floor(elapsed/60), secs=elapsed%60;
-  const workSecs=(activeWorkout?activeWorkout.rounds*(activeWorkout.work||40):0);
+  // real work seconds = sum of all work phases
+  const workSecs=phases.filter(p=>p.type==='work').reduce((a,p)=>a+p.dur,0);
   const cals=Math.round(workSecs*0.14);
-  // populate complete screen with REAL stats
   const tEl=document.getElementById('ko-time'); if(tEl) tEl.textContent=`${mins}:${String(secs).padStart(2,'0')}`;
   const cEl=document.getElementById('ko-cals'); if(cEl) cEl.textContent=cals;
   recordSession(cals, workSecs);
@@ -743,8 +804,8 @@ function finishWorkout(){
 }
 
 // legacy entry points kept working
-function startWorkout(){ if(loadedWorkout) launchWorkout(loadedWorkout); else engageCoach(); }
-function resumeLast(){ if(loadedWorkout) launchWorkout(loadedWorkout); else engageCoach(); }
+function startWorkout(){ if(loadedWorkout) launchWorkout(loadedWorkout); else go('chat'); }
+function resumeLast(){ if(loadedWorkout) launchWorkout(loadedWorkout); else go('home'); }
 
 // ── COACH ──
 function openCoach(){ document.getElementById('coach-overlay').classList.add('on'); }
@@ -757,24 +818,29 @@ let coachHistory=[];        // full conversation sent to the backend
 let loadedWorkout=null;     // the workout the coach last built
 
 // Morph the Home hero into the inline conversation (same screen).
-function engageCoach(){
-  const home=document.getElementById('s-home');
-  home.classList.add('talking');
-  // Seed the greeting once
+// Stage 1 → Stage 2: user makes their request on Home, then we transition to
+// the dedicated conversation screen carrying that first request in.
+function submitAsk(presetText){
+  const input=document.getElementById('home-ask');
+  const text=(presetText!==undefined?presetText:(input?input.value.trim():'')).trim();
+  if(!text) { if(input) input.focus(); return; }
+  if(input) input.value='';
+  // unlock audio on this user gesture
+  if('speechSynthesis' in window){ speak(' '); }
+  // move to the coach's room
+  go('chat');
+  // greet once, then send their request
   const body=document.getElementById('chat-body');
   if(body && !body.dataset.greeted){
     body.dataset.greeted='1';
     const streak=stats.streak||0;
     const greet = streak>0
-      ? `Good to see you back — that's ${streak} day${streak===1?'':'s'} in a row. What are we training today? Tell me your mood, your time, your goal.`
-      : `Let's get to work. What are we training today? Tell me your mood, how much time you've got, and what you want to hit.`;
+      ? `Good to see you back — that's ${streak} day${streak===1?'':'s'} in a row. Let's build it.`
+      : `Let's get to work. Building your session now.`;
     addCoachMsg(greet);
-    speak(greet, {rate:1.03});
   }
-  setTimeout(()=>{ const inp=document.getElementById('chat-input'); if(inp) inp.focus(); }, 300);
-}
-function collapseCoach(){
-  document.getElementById('s-home').classList.remove('talking');
+  addUserMsg(text);
+  askCoach(text);
 }
 
 function quickSend(text){ addUserMsg(text); askCoach(text); }
@@ -833,15 +899,25 @@ async function askCoach(userText){
 
 function renderPlan(w){
   loadedWorkout=w;
-  const mins=Math.round((w.rounds*(w.work+w.rest))/60);
+  // Normalize for display
+  const list=(w.exercises||[]).map(e=> typeof e==='string'
+    ? {name:e,sets:1,work:(w.work||40),rest:(w.rest||20)}
+    : {name:String(e.name||'Work'),sets:Math.max(1,parseInt(e.sets)||1),work:Math.max(5,parseInt(e.work)||40),rest:Math.max(0,parseInt(e.rest!=null?e.rest:20))});
+  const totalSets=list.reduce((a,e)=>a+e.sets,0);
+  const totalSecs=list.reduce((a,e)=>a+e.sets*(e.work+e.rest),0);
+  const mins=Math.max(1,Math.round(totalSecs/60));
+  // Display each exercise, showing sets when >1
+  const exLines=list.map(e=> e.sets>1 ? `${e.name} (${e.sets}×${e.work}s)` : e.name);
+  const shown=exLines.slice(0,4).join(' · ')+(exLines.length>4?` · +${exLines.length-4} more`:'');
+  const unit = list.length===1 ? `${totalSets} set${totalSets>1?'s':''}` : `${list.length} exercises · ${totalSets} sets`;
+
   const body=document.getElementById('chat-body');
   const card=document.createElement('div'); card.className='c-plan';
-  const list=(w.exercises||[]);
   card.innerHTML=`
     <div class="c-plan-badge">✦ Built for you · right now</div>
     <div class="c-plan-name">${w.name||'Your Session'}</div>
-    <div class="c-plan-line">${w.rounds} rounds · ${mins} min · ${w.intensity||'MEDIUM'} intensity</div>
-    <div class="c-plan-line" style="margin-top:6px;">${list.slice(0,4).join(' · ')}${list.length>4?' · +'+(list.length-4)+' more':''}</div>
+    <div class="c-plan-line">${unit} · ${mins} min · ${w.intensity||'MEDIUM'} intensity</div>
+    <div class="c-plan-line" style="margin-top:6px;">${shown}</div>
     <button class="c-plan-cta">Start this session</button>
   `;
   card.querySelector('.c-plan-cta').addEventListener('click', ()=>launchWorkout(w));
