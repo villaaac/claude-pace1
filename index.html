@@ -240,16 +240,16 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
   border-radius:99px;padding:3px 10px;font-weight:600;letter-spacing:.02em;margin-top:6px;}
 .voice-tag.off{color:var(--steel);background:rgba(107,112,128,.15);}
 
-.ring-wrap{position:relative;width:min(74vw,300px);height:min(74vw,300px);margin:24px auto;display:flex;align-items:center;justify-content:center;}
-.ring-wrap svg{position:absolute;inset:0;transform:rotate(-90deg);}
-.ring-num{font-family:'Barlow Condensed';font-weight:800;font-size:min(30vw,120px);line-height:1;letter-spacing:-.02em;}
+.ring-wrap{position:relative;width:min(74vw,300px);height:min(74vw,300px);margin:24px auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
+.ring-wrap > svg{position:absolute;inset:0;transform:rotate(-90deg);}
+.ring-num{position:relative;z-index:1;font-family:'Barlow Condensed';font-weight:800;font-size:min(26vw,104px);line-height:.9;letter-spacing:-.02em;}
 .ring-tap{cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .ring-tap:active{transform:scale(.985);}
-.ring-hint{position:absolute;bottom:30%;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;transition:opacity .3s;}
-.ring-wrap.paused .ring-num{opacity:.4;}
+.ring-hint{position:relative;z-index:1;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;transition:opacity .3s;text-align:center;}
+.ring-wrap.paused .ring-num{opacity:.35;}
 .ring-wrap.paused .ring-hint{color:var(--lime);opacity:1;}
-.ring-hr{position:absolute;bottom:22%;display:flex;align-items:center;gap:5px;color:var(--orange);font-weight:700;font-size:15px;}
-.ring-hr svg{width:16px;height:16px;fill:var(--orange);animation:beat 1s ease-in-out infinite;}
+.ring-hr{position:relative;z-index:1;display:flex;align-items:center;gap:5px;color:var(--orange);font-weight:700;font-size:14px;}
+.ring-hr svg{position:static;transform:none;width:15px;height:15px;fill:var(--orange);animation:beat 1s ease-in-out infinite;}
 @keyframes beat{0%,100%{transform:scale(1);}15%{transform:scale(1.25);}30%{transform:scale(1);}}
 
 .upnext{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 16px;
