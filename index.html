@@ -641,6 +641,26 @@ const screens=['home','chat','today','workout','rest','complete','progress'];
 const navMap={home:'n-home',chat:'n-home',today:'n-today',workout:'n-workout',rest:'n-workout',complete:'n-progress',progress:'n-progress'};
 let current='home';
 
+// ── SCREEN WAKE LOCK (keep screen on during workouts) ──
+let wakeLock=null;
+async function requestWakeLock(){
+  try{
+    if('wakeLock' in navigator){
+      wakeLock=await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release',()=>{ wakeLock=null; });
+    }
+  }catch(e){ /* not supported or denied — fail quietly */ }
+}
+async function releaseWakeLock(){
+  try{ if(wakeLock){ await wakeLock.release(); wakeLock=null; } }catch(e){}
+}
+// Re-acquire if the user tabs away and comes back mid-workout
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState==='visible' && (current==='workout'||current==='rest')){
+    requestWakeLock();
+  }
+});
+
 function go(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   document.getElementById('s-'+name).classList.add('on');
@@ -654,6 +674,8 @@ function go(name){
   else nav.classList.remove('hidden');
   // side effects — the workout engine manages timing itself now
   if(name==='home'){ document.getElementById('s-home').classList.remove('talking'); }
+  // release the screen wake lock if we've left the active workout flow
+  if(name!=='workout' && name!=='rest' && name!=='complete'){ releaseWakeLock(); }
   if(name==='complete'){ stopTimer(); fireConfetti(); }
   if(name==='progress'){ renderProgress(); }
   if(name==='today'){ renderRecent(); }
@@ -728,6 +750,7 @@ function launchWorkout(w){
 
   pIdx=0; sessionStart=Date.now();
   if('speechSynthesis' in window){ speak(' '); }
+  requestWakeLock();
   go('workout');
   startPhase();
 }
@@ -820,6 +843,7 @@ function skipRest(){ stopTimer(); pIdx++; startPhase(); }
 
 function finishWorkout(){
   stopTimer();
+  releaseWakeLock();
   const elapsed=Math.round((Date.now()-sessionStart)/1000);
   const mins=Math.floor(elapsed/60), secs=elapsed%60;
   // real work seconds = sum of all work phases
