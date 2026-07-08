@@ -234,6 +234,9 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 .wk-mute{width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--line);
   display:flex;align-items:center;justify-content:center;cursor:pointer;}
 .wk-mute svg{width:18px;height:18px;stroke:var(--bone);}
+.wk-exit{width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:transform .12s,border-color .2s;}
+.wk-exit:active{transform:scale(.92);border-color:var(--orange);}
+.wk-exit svg{width:18px;height:18px;stroke:var(--bone);}
 .wk-ex{font-family:'Barlow Condensed';font-weight:800;font-size:40px;line-height:1;text-align:center;margin-top:8px;}
 .wk-phase-sub{text-align:center;color:var(--steel);font-size:14px;margin-top:4px;}
 .voice-tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--lime);background:var(--lime-dim);
@@ -378,9 +381,6 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
       <div class="ask-box" id="ask-box">
         <input type="text" class="ask-input" id="home-ask" placeholder="Tell your coach what you need…"
           onkeydown="if(event.key==='Enter')submitAsk()">
-        <button class="ask-mic" onclick="micPulse(this)" aria-label="Voice">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/></svg>
-        </button>
         <button class="ask-send" onclick="submitAsk()" aria-label="Send">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
         </button>
@@ -423,7 +423,6 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 
     <div class="chat-input-row">
       <input type="text" class="chat-input" id="chat-input" placeholder="Tell your coach what you need…" onkeydown="if(event.key==='Enter')sendChat()">
-      <button class="chat-mic" onclick="micPulse(this)" aria-label="Voice"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/></svg></button>
       <button class="chat-send" onclick="sendChat()" aria-label="Send"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
     </div>
   </div>
@@ -450,7 +449,12 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
   <!-- ══ WORKOUT ══ -->
   <div class="screen" id="s-workout">
     <div class="wk-top">
-      <div class="wk-round work" id="wk-round">Round 2 of 6</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="wk-exit" onclick="exitWorkout()" role="button" aria-label="End workout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </div>
+        <div class="wk-round work" id="wk-round">Round 2 of 6</div>
+      </div>
       <div style="display:flex;gap:8px;">
         <div class="wk-mute" onclick="toggleVoice()" aria-label="Toggle voice coaching" title="Voice coaching">
           <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>
@@ -498,7 +502,12 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
   <!-- ══ REST ══ -->
   <div class="screen" id="s-rest">
     <div class="wk-top">
-      <div class="wk-round rest">Rest · Round 2 of 6</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="wk-exit" onclick="exitWorkout()" role="button" aria-label="End workout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </div>
+        <div class="wk-round rest">Rest · Round 2 of 6</div>
+      </div>
       <div class="wk-mute" onclick="openCoach()"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
     </div>
     <div class="wk-ex" style="color:var(--orange);">Breathe</div>
@@ -608,8 +617,6 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
     <div class="cue"><div class="cue-ico"></div><div><div class="cue-t">Control your breathing</div><div class="cue-s">Steady in, steady out.</div></div></div>
     <div class="cue"><div class="cue-ico"></div><div><div class="cue-t">Quality over quantity</div><div class="cue-s">Clean reps beat rushed ones.</div></div></div>
     <div class="cue"><div class="cue-ico"></div><div><div class="cue-t">You've got this</div><div class="cue-s">Finish strong. The last rounds count double.</div></div></div>
-    <button class="mic-btn" onclick="micPulse(this)"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h2v-2.06A9 9 0 0 0 21 12v-2z"/></svg></button>
-    <div class="mic-label">Tap to talk to your corner</div>
   </div>
 
   <div id="confetti"></div>
@@ -840,6 +847,17 @@ function togglePause(){
 }
 function nextPhase(){ stopTimer(); pIdx++; startPhase(); }
 function skipRest(){ stopTimer(); pIdx++; startPhase(); }
+
+// End a workout early — confirm, stop everything, return home.
+function exitWorkout(){
+  const ok = confirm('End this workout? Your progress this session won\u2019t be saved.');
+  if(!ok) return;
+  stopTimer();
+  releaseWakeLock();
+  try{ speechSynthesis.cancel(); }catch(e){}
+  paused=false;
+  go('home');
+}
 
 function finishWorkout(){
   stopTimer();
@@ -1122,8 +1140,7 @@ function toggleFav(i){
   saveStats(); renderRecent();
 }
 function openQuickTimer(){
-  // Placeholder until Stage 4 (manual timer) is built.
-  alert('Quick interval timer is coming next. For now, ask your coach for a workout.');
+  alert('Quick interval timer is coming soon. For now, ask your coach to build you a session — just tell it what you want.');
 }
 
 function renderProgress(){
