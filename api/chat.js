@@ -1,3 +1,5 @@
+// PACE — AI Coach backend. © 2026 PACE. All rights reserved.
+// Proprietary. Do not copy, distribute, or reuse without permission.
 // PACE — AI coach backend (Vercel serverless function)
 // Connects the on-screen conversation to the Anthropic API.
 // The API key stays server-side and is never exposed to the browser.
@@ -74,7 +76,7 @@ Use the whole conversation as context — never make the user repeat themselves.
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-sonnet-5',
         max_tokens: 1024,
         system,
         messages: convo,
