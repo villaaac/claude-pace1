@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+  PACE — AI Coach. Every rep. Every day.
+  © 2026 PACE. All rights reserved.
+  This source code and its content are proprietary and may not be copied,
+  distributed, or reused without express written permission.
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -268,6 +274,23 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 .wk-btn.primary{background:var(--bone);color:var(--canvas);border-color:var(--bone);}
 
 /* ── COACH OVERLAY ── */
+/* beta disclaimer modal */
+.about-foot{margin-top:26px;padding-top:18px;border-top:1px solid var(--line);text-align:center;}
+.about-link{background:transparent;border:1px solid var(--line);color:var(--steel);border-radius:99px;padding:9px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Barlow';}
+.about-link:active{border-color:var(--lime);color:var(--lime);}
+.about-copy{font-size:11px;color:var(--steel);opacity:.6;margin-top:12px;}
+.disc-overlay{position:absolute;inset:0;z-index:100;background:rgba(6,6,9,.86);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:24px;}
+.disc-overlay.on{display:flex;animation:screenIn .35s ease-out;}
+.disc-card{background:var(--canvas-2);border:1px solid var(--line);border-radius:20px;padding:26px 22px;max-width:400px;width:100%;max-height:88vh;overflow-y:auto;}
+.disc-brand{font-family:'Barlow Condensed';font-weight:800;font-size:22px;letter-spacing:.14em;color:var(--lime);margin-bottom:4px;}
+.disc-title{font-family:'Barlow Condensed';font-weight:800;font-size:28px;line-height:1;margin-bottom:14px;}
+.disc-body p{font-size:13.5px;line-height:1.55;color:var(--bone);opacity:.9;margin-bottom:11px;}
+.disc-body b{color:var(--bone);opacity:1;}
+.disc-copy{font-size:11px!important;color:var(--steel)!important;opacity:.7!important;border-top:1px solid var(--line);padding-top:12px;margin-top:4px;}
+.disc-btn{width:100%;background:var(--lime);color:var(--canvas);border:none;border-radius:14px;font-family:'Barlow Condensed';font-weight:800;font-size:18px;letter-spacing:.06em;text-transform:uppercase;padding:15px;cursor:pointer;margin-top:8px;transition:transform .12s;}
+.disc-btn:active{transform:scale(.98);}
+.disc-link{width:100%;background:transparent;color:var(--steel);border:none;font-size:13px;padding:12px;cursor:pointer;margin-top:4px;}
+
 #coach-overlay{position:absolute;inset:0;z-index:50;background:rgba(11,11,15,.92);backdrop-filter:blur(12px);
   display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;}
 #coach-overlay.on{display:flex;animation:screenIn .3s ease-out;}
@@ -606,6 +629,11 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
     <div class="rec-row"><div class="rec-thumb">S</div><div class="rec-info"><div class="rec-name">Boxing Hand Speed</div><div class="rec-meta">Today · 24 min</div></div><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
     <div class="rec-row"><div class="rec-thumb">H</div><div class="rec-info"><div class="rec-name">HIIT Full Body</div><div class="rec-meta">Yesterday · 28 min</div></div><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
     <div class="rec-row"><div class="rec-thumb">C</div><div class="rec-info"><div class="rec-name">Core & Mobility</div><div class="rec-meta">Mon · 20 min</div></div><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+
+    <div class="about-foot">
+      <button class="about-link" onclick="showDisclaimer()">Terms &amp; Disclaimer</button>
+      <div class="about-copy">© 2026 PACE · Beta · All rights reserved</div>
+    </div>
   </div>
 
   <!-- ══ COACH OVERLAY ══ -->
@@ -620,6 +648,23 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
   </div>
 
   <div id="confetti"></div>
+
+  <!-- ══ BETA DISCLAIMER MODAL ══ -->
+  <div id="disclaimer" class="disc-overlay">
+    <div class="disc-card">
+      <div class="disc-brand">PACE</div>
+      <div class="disc-title">Welcome to the Beta</div>
+      <div class="disc-body">
+        <p>PACE is an early <b>prototype</b> you're helping test. Thanks for being here.</p>
+        <p>PACE builds workouts using AI. These suggestions are for <b>general fitness and informational purposes only</b> — they are not medical advice and aren't tailored to your personal health conditions.</p>
+        <p><b>You use PACE and its AI-generated workouts entirely at your own risk.</b> Exercise carries inherent risks. Please consult a physician before starting any exercise program, stop if you feel pain or dizziness, and don't push beyond your limits. PACE and its creator aren't liable for any injury, harm, or loss arising from use of the app.</p>
+        <p>As a beta, things may change, break, or behave unexpectedly.</p>
+        <p class="disc-copy">© 2026 PACE. All rights reserved. This app and its content are the property of PACE and may not be copied or reused without permission.</p>
+      </div>
+      <button class="disc-btn" onclick="acceptDisclaimer()">I understand — let's train</button>
+      <button class="disc-link" onclick="hideDisclaimer()">Close</button>
+    </div>
+  </div>
 
   <!-- ══ NAV ══ -->
   <nav id="nav">
@@ -1172,9 +1217,33 @@ function renderProgress(){
 
 // ── INIT ──
 loadStats();
+// Beta disclaimer — show on first launch (per device), re-viewable from Progress.
+function showDisclaimer(){ document.getElementById('disclaimer').classList.add('on'); }
+function hideDisclaimer(){ document.getElementById('disclaimer').classList.remove('on'); }
+function acceptDisclaimer(){
+  try{ localStorage.setItem('pace-disclaimer-accepted','1'); }catch(e){}
+  hideDisclaimer();
+}
+(function(){
+  let accepted=false;
+  try{ accepted=localStorage.getItem('pace-disclaimer-accepted')==='1'; }catch(e){}
+  if(!accepted) setTimeout(showDisclaimer, 400);
+})();
 document.querySelectorAll('.streak').forEach(s=>s.innerHTML=`<span class="flame-ico"></span> ${stats.streak||0}`);
 if('speechSynthesis' in window){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices(); }
-if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{})); }
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js').then(reg=>{
+      // Check for a new version each time the app loads.
+      reg.update().catch(()=>{});
+      // When a new worker takes over, reload once so the user sees the latest.
+      let refreshing=false;
+      navigator.serviceWorker.addEventListener('controllerchange',()=>{
+        if(refreshing) return; refreshing=true; window.location.reload();
+      });
+    }).catch(()=>{});
+  });
+}
 </script>
 </body>
 </html>
