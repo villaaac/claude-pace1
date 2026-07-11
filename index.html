@@ -335,7 +335,7 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 .feel-l{font-size:11px;color:var(--steel);margin-top:4px;font-weight:600;}
 
 /* ── PROGRESS ── */
-.week-strip{display:flex;justify-content:space-between;gap:6px;margin-bottom:8px;}
+.week-strip{display:flex;justify-content:space-between;gap:6px;margin-bottom:8px;flex-shrink:0;}
 .wd{flex:1;aspect-ratio:1;border-radius:12px;background:var(--card);border:1px solid var(--line);
   display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--steel);position:relative;}
 .wd.done{background:var(--lime);color:var(--canvas);border-color:var(--lime);}
@@ -346,10 +346,10 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 .week-count-t{font-family:'Barlow Condensed';text-transform:uppercase;letter-spacing:.14em;font-size:12px;color:var(--steel);}
 .week-count-v{font-family:'Barlow Condensed';font-weight:800;font-size:22px;}
 .week-count-v .lime{color:var(--lime);}
-.week-bar{height:8px;background:var(--card);border-radius:99px;overflow:hidden;margin-bottom:22px;}
+.week-bar{height:8px;background:var(--card);border-radius:99px;overflow:hidden;margin-bottom:22px;flex-shrink:0;}
 .week-bar-fill{height:100%;background:var(--lime);border-radius:99px;transition:width .8s cubic-bezier(.16,1,.3,1);}
-.big-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-radius:16px;overflow:hidden;margin-bottom:24px;}
-.big-stat{background:var(--card);padding:16px 8px;text-align:center;}
+.big-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-radius:16px;overflow:hidden;margin-bottom:24px;flex-shrink:0;}
+.big-stat{background:var(--card);padding:16px 8px;text-align:center;min-height:64px;display:flex;flex-direction:column;justify-content:center;}
 .big-stat-v{font-family:'Barlow Condensed';font-weight:800;font-size:22px;line-height:1;}
 .big-stat-l{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--steel);margin-top:4px;}
 .rec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
@@ -364,7 +364,7 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 .rec-row svg{width:18px;height:18px;stroke:var(--steel);}
 
 /* accountability card — the behavior layer, made a hero */
-.accountable{background:linear-gradient(150deg, rgba(232,184,75,.14), var(--card));border:1px solid rgba(232,184,75,.28);
+.accountable{flex-shrink:0;background:linear-gradient(150deg, rgba(232,184,75,.14), var(--card));border:1px solid rgba(232,184,75,.28);
   border-radius:16px;padding:16px;margin-bottom:22px;display:flex;gap:14px;align-items:flex-start;}
 .acc-ico{font-size:26px;flex-shrink:0;}
 .acc-t{font-weight:700;font-size:15px;color:var(--gold);margin-bottom:3px;}
@@ -482,9 +482,6 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
         <div class="wk-mute" onclick="toggleVoice()" aria-label="Toggle voice coaching" title="Voice coaching">
           <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>
         </div>
-        <div class="wk-mute" onclick="openCoach()" aria-label="Coach">
-          <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-        </div>
       </div>
     </div>
     <div class="wk-ex" id="wk-ex">Shadow Boxing</div>
@@ -531,7 +528,7 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
         </div>
         <div class="wk-round rest">Rest · Round 2 of 6</div>
       </div>
-      <div class="wk-mute" onclick="openCoach()"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
+      <div class="wk-mute" onclick="toggleVoice()" aria-label="Toggle voice coaching"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg></div>
     </div>
     <div class="wk-ex" style="color:var(--orange);">Breathe</div>
     <div class="wk-phase-sub">Reset. Shake it out.</div>
@@ -567,7 +564,7 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
       <div class="ko-check"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
       <div class="ko-title">WORKOUT<br>COMPLETE</div>
-      <div class="ko-sub">That's how champions train. 13-day streak.</div>
+      <div class="ko-sub">Work's done. Well done.</div>
       <div class="ko-stats">
         <div class="ko-stat"><div class="ko-stat-v" id="ko-time">0:00</div><div class="ko-stat-l">Time</div></div>
         <div class="ko-stat"><div class="ko-stat-v lime" id="ko-cals" style="color:var(--lime);">0</div><div class="ko-stat-l">Cals</div></div>
@@ -624,11 +621,11 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 
     <div class="rec-head">
       <div class="rec-title">Recent Rounds</div>
-      <div class="rec-all">View all</div>
+      <div class="rec-all" onclick="go('today')">View all</div>
     </div>
-    <div class="rec-row"><div class="rec-thumb">S</div><div class="rec-info"><div class="rec-name">Boxing Hand Speed</div><div class="rec-meta">Today · 24 min</div></div><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
-    <div class="rec-row"><div class="rec-thumb">H</div><div class="rec-info"><div class="rec-name">HIIT Full Body</div><div class="rec-meta">Yesterday · 28 min</div></div><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
-    <div class="rec-row"><div class="rec-thumb">C</div><div class="rec-info"><div class="rec-name">Core & Mobility</div><div class="rec-meta">Mon · 20 min</div></div><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+    <div id="prog-recent">
+      <div class="lib-empty">No sessions yet. Ask your coach for a workout and it'll show up here.</div>
+    </div>
 
     <div class="about-foot">
       <button class="about-link" onclick="showDisclaimer()">Terms &amp; Disclaimer</button>
@@ -915,7 +912,7 @@ function finishWorkout(){
   const tEl=document.getElementById('ko-time'); if(tEl) tEl.textContent=`${mins}:${String(secs).padStart(2,'0')}`;
   const cEl=document.getElementById('ko-cals'); if(cEl) cEl.textContent=cals;
   recordSession(cals, workSecs);
-  speak('Workout complete. That\u2019s how champions train.', {rate:1.02, pitch:1.05});
+  speak('Workout complete. Well done.', {rate:1.02, pitch:1.05});
   go('complete');
 }
 
@@ -1134,7 +1131,7 @@ function recordSession(cals, workSec){
   saveStats();
   document.querySelectorAll('.streak').forEach(s=>s.innerHTML=`<span class="flame-ico"></span> ${streak}`);
   const koSub=document.querySelector('#s-complete .ko-sub');
-  if(koSub) koSub.textContent=`That's how champions train. ${streak}-day streak.`;
+  if(koSub) koSub.textContent=`Work's done. Well done. ${streak}-day streak.`;
 }
 
 // ── WORKOUT LIBRARY (recent + favorites) ──
@@ -1213,6 +1210,28 @@ function renderProgress(){
   // accountability card
   const acc=document.querySelector('.accountable .acc-t');
   if(acc) acc.textContent=`You're on a ${stats.streak}-day streak`;
+
+  // recent rounds — REAL completed workouts
+  const wrap=document.getElementById('prog-recent');
+  if(wrap){
+    const hist=(stats.history||[]).slice(0,3);
+    if(!hist.length){
+      wrap.innerHTML='<div class="lib-empty">No sessions yet. Ask your coach for a workout and it\u2019ll show up here.</div>';
+    } else {
+      wrap.innerHTML=hist.map((w,i)=>{
+        const mins=Math.max(1,Math.round(w.exercises.reduce((a,e)=>a+(e.sets||1)*((e.work||40)+(e.rest||20)),0)/60));
+        const initial=(w.name||'S').trim().charAt(0).toUpperCase();
+        return `<div class="rec-row" onclick="repeatWorkout(${i})">
+          <div class="rec-thumb">${initial}</div>
+          <div class="rec-info">
+            <div class="rec-name">${w.name}</div>
+            <div class="rec-meta">${fmtWhen(w.ts)} · ${mins} min</div>
+          </div>
+          <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>`;
+      }).join('');
+    }
+  }
 }
 
 // ── INIT ──
