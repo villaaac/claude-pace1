@@ -204,6 +204,34 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 .lib-card-ex{font-size:12px;color:var(--bone);opacity:.75;line-height:1.5;}
 .lib-card-when{font-size:11px;color:var(--steel);margin-top:8px;}
 
+/* ── workout detail / edit before starting ── */
+.det-hint{font-size:12px;color:var(--steel);margin-bottom:14px;}
+.det-ex{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:9px;}
+.det-ex-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.det-ex-n{font-family:'Barlow Condensed';font-weight:800;font-size:15px;color:var(--lime);width:18px;text-align:center;flex-shrink:0;}
+.det-ex-name{font-weight:600;font-size:15px;flex:1;}
+.det-fields{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.det-field{background:rgba(255,255,255,.03);border-radius:10px;padding:7px 6px;text-align:center;}
+.det-field-l{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);margin-bottom:4px;}
+.det-field-c{display:flex;align-items:center;justify-content:center;gap:6px;}
+.det-mini{width:24px;height:24px;border-radius:7px;border:1px solid var(--line);background:transparent;color:var(--bone);
+  font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;}
+.det-mini:active{border-color:var(--lime);color:var(--lime);}
+.det-field-v{font-family:'JetBrains Mono';font-weight:700;font-size:14px;min-width:26px;}
+
+/* ── quick interval timer ── */
+.qt-row{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+.qt-label{font-weight:600;font-size:15px;}
+.qt-unit{font-size:11px;color:var(--steel);font-weight:400;}
+.qt-ctrl{display:flex;align-items:center;gap:12px;}
+.qt-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:transparent;
+  color:var(--bone);font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  line-height:1;padding:0;transition:all .14s;}
+.qt-btn:active{border-color:var(--lime);color:var(--lime);transform:scale(.92);}
+.qt-val{font-family:'Barlow Condensed';font-weight:800;font-size:26px;min-width:42px;text-align:center;}
+.qt-total{text-align:center;font-size:13px;color:var(--lime);margin-top:16px;font-weight:600;}
+
 /* ── TODAY ── */
 .plan-badge{display:inline-flex;align-items:center;gap:6px;background:var(--lime-dim);border:1px solid rgba(196,255,61,.3);
   border-radius:99px;padding:4px 12px;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--lime);
@@ -237,6 +265,7 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 .wk-round{font-family:'Barlow Condensed';text-transform:uppercase;letter-spacing:.16em;font-size:12px;font-weight:600;}
 .wk-round.work{color:var(--lime);}
 .wk-round.rest{color:var(--orange);}
+.wk-round.warm{color:var(--gold);}
 .wk-mute{width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--line);
   display:flex;align-items:center;justify-content:center;cursor:pointer;}
 .wk-mute svg{width:18px;height:18px;stroke:var(--bone);}
@@ -333,6 +362,13 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 .feel.sel{border-color:var(--lime);background:var(--lime-dim);}
 .feel-emo{font-size:26px;}
 .feel-l{font-size:11px;color:var(--steel);margin-top:4px;font-weight:600;}
+/* coach acknowledgement after the user rates the session */
+.feel-ack{display:none;align-items:flex-start;gap:10px;background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:13px 15px;margin-bottom:16px;font-size:13.5px;line-height:1.5;color:var(--bone);
+  animation:msgIn .35s ease-out;}
+.feel-ack.on{display:flex;}
+.feel-ack-orb{width:22px;height:22px;border-radius:50%;flex-shrink:0;margin-top:1px;
+  background:radial-gradient(circle at 35% 30%, var(--lime), #6fa018 72%);box-shadow:0 0 12px rgba(196,255,61,.35);}
 
 /* ── PROGRESS ── */
 .week-strip{display:flex;justify-content:space-between;gap:6px;margin-bottom:8px;flex-shrink:0;}
@@ -476,13 +512,125 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
     <button class="cta" style="margin-bottom:10px;" onclick="go('home')">Ask your coach for a new workout</button>
     <button class="cta-ghost" style="margin-bottom:20px;" onclick="openQuickTimer()">Quick interval timer</button>
 
+    <div id="fav-section" style="display:none;">
+      <div class="lib-section-title">Favorites</div>
+      <div id="fav-list"></div>
+    </div>
+
     <div class="lib-section-title">Recent</div>
     <div id="recent-list">
       <div class="lib-empty">No workouts yet. Ask your coach to build your first session — it'll show up here so you can repeat it anytime.</div>
     </div>
   </div>
 
+  <!-- ══ WORKOUT DETAIL / EDIT BEFORE STARTING ══ -->
+  <div class="screen" id="s-detail">
+    <div class="convo-head">
+      <button class="chat-back" onclick="go('today')" aria-label="Back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div>
+        <div class="scr-title" id="det-name" style="font-size:24px;margin:0;">Workout</div>
+        <div class="chat-coach-status" id="det-meta">—</div>
+      </div>
+    </div>
+
+    <div class="det-hint">Tap − / + to adjust. Your changes apply to this session.</div>
+
+    <div id="det-ex-list"></div>
+
+    <button class="cta" style="margin-top:8px;" onclick="startEditedWorkout()">Start Workout</button>
+    <button class="cta-ghost" onclick="resetEdits()">Reset to original</button>
+  </div>
+
+  <!-- ══ QUICK INTERVAL TIMER (manual, no coach) ══ -->
+  <div class="screen" id="s-quick">
+    <div class="convo-head">
+      <button class="chat-back" onclick="go('today')" aria-label="Back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div>
+        <div class="scr-title" style="font-size:24px;margin:0;">Quick Timer</div>
+        <div class="chat-coach-status">No coach. Just a clock.</div>
+      </div>
+    </div>
+
+    <div class="det-hint">Set it up yourself and go.</div>
+
+    <div class="qt-row">
+      <div class="qt-label">Rounds</div>
+      <div class="qt-ctrl">
+        <button class="qt-btn" onclick="qtAdjust('rounds',-1)">−</button>
+        <div class="qt-val" id="qt-rounds">8</div>
+        <button class="qt-btn" onclick="qtAdjust('rounds',1)">+</button>
+      </div>
+    </div>
+    <div class="qt-row">
+      <div class="qt-label">Work <span class="qt-unit">seconds</span></div>
+      <div class="qt-ctrl">
+        <button class="qt-btn" onclick="qtAdjust('work',-5)">−</button>
+        <div class="qt-val" id="qt-work">30</div>
+        <button class="qt-btn" onclick="qtAdjust('work',5)">+</button>
+      </div>
+    </div>
+    <div class="qt-row">
+      <div class="qt-label">Rest <span class="qt-unit">seconds</span></div>
+      <div class="qt-ctrl">
+        <button class="qt-btn" onclick="qtAdjust('rest',-5)">−</button>
+        <div class="qt-val" id="qt-rest">15</div>
+        <button class="qt-btn" onclick="qtAdjust('rest',5)">+</button>
+      </div>
+    </div>
+
+    <div class="qt-total" id="qt-total">Total: 6 min</div>
+
+    <button class="cta" style="margin-top:14px;" onclick="startQuickTimer()">Start Timer</button>
+  </div>
+
   <!-- ══ WORKOUT ══ -->
+  <!-- ══ WARMUP / GET READY ══ -->
+  <div class="screen" id="s-warmup">
+    <div class="wk-top">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="wk-exit" onclick="exitWorkout()" role="button" aria-label="Cancel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </div>
+        <div class="wk-round warm" id="warm-label">Get Ready</div>
+      </div>
+      <div class="wk-mute" onclick="toggleVoice()" aria-label="Toggle voice coaching">
+        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>
+      </div>
+    </div>
+
+    <div class="wk-ex" id="warm-name">Your Session</div>
+    <div class="wk-phase-sub" id="warm-sub">Set your phone down. Get into position.</div>
+
+    <div class="ring-wrap">
+      <svg viewBox="0 0 300 300">
+        <circle cx="150" cy="150" r="132" fill="none" stroke="rgba(244,239,230,.08)" stroke-width="14"/>
+        <circle id="warm-ring" cx="150" cy="150" r="132" fill="none" stroke="var(--gold)" stroke-width="14"
+          stroke-linecap="round" stroke-dasharray="829.4" stroke-dashoffset="0"
+          style="transition:stroke-dashoffset 1s linear;"/>
+      </svg>
+      <div class="ring-num display" id="warm-num">30</div>
+      <div class="ring-hint">Warming up</div>
+    </div>
+
+    <div class="upnext">
+      <div style="flex:1;">
+        <div class="upnext-l">First Up</div>
+        <div class="upnext-n" id="warm-first">—</div>
+      </div>
+    </div>
+
+    <div class="wk-ctrls">
+      <button class="wk-btn primary" onclick="skipWarmup()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20"/><rect x="17" y="4" width="3" height="16"/></svg>
+        Skip Warmup
+      </button>
+    </div>
+  </div>
+
   <div class="screen" id="s-workout">
     <div class="wk-top">
       <div style="display:flex;align-items:center;gap:10px;">
@@ -584,9 +732,13 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
       </div>
       <div class="feel-q">How'd that feel?</div>
       <div class="feels">
-        <div class="feel" onclick="pickFeel(this)"><div class="feel-emo feel-easy"></div><div class="feel-l">Too Easy</div></div>
-        <div class="feel sel" onclick="pickFeel(this)"><div class="feel-emo feel-right"></div><div class="feel-l">Just Right</div></div>
-        <div class="feel" onclick="pickFeel(this)"><div class="feel-emo feel-hard"></div><div class="feel-l">Too Hard</div></div>
+        <div class="feel" onclick="pickFeel(this,'easy')"><div class="feel-emo feel-easy"></div><div class="feel-l">Too Easy</div></div>
+        <div class="feel" onclick="pickFeel(this,'right')"><div class="feel-emo feel-right"></div><div class="feel-l">Just Right</div></div>
+        <div class="feel" onclick="pickFeel(this,'hard')"><div class="feel-emo feel-hard"></div><div class="feel-l">Too Hard</div></div>
+      </div>
+      <div class="feel-ack" id="feel-ack">
+        <span class="feel-ack-orb"></span>
+        <span id="feel-ack-text"></span>
       </div>
       <button class="cta" onclick="go('progress')">Finish</button>
     </div>
@@ -692,7 +844,7 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
       <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       Today
     </div>
-    <div class="nav-i" id="n-workout" onclick="go('workout')">
+    <div class="nav-i" id="n-workout" onclick="openQuickTimer()">
       <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
       Train
     </div>
@@ -705,8 +857,8 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
 </div>
 
 <script>
-const screens=['home','chat','today','workout','rest','complete','progress'];
-const navMap={home:'n-home',chat:'n-home',today:'n-today',workout:'n-workout',rest:'n-workout',complete:'n-progress',progress:'n-progress'};
+const screens=['home','chat','today','detail','quick','warmup','workout','rest','complete','progress'];
+const navMap={home:'n-home',chat:'n-home',today:'n-today',detail:'n-today',quick:'n-workout',warmup:'n-workout',workout:'n-workout',rest:'n-workout',complete:'n-progress',progress:'n-progress'};
 let current='home';
 
 // ── SCREEN WAKE LOCK (keep screen on during workouts) ──
@@ -738,13 +890,19 @@ function go(name){
   const navId=navMap[name]; if(navId) document.getElementById(navId).classList.add('on');
   // hide nav during focused timer screens
   const nav=document.getElementById('nav');
-  if(name==='workout'||name==='rest'||name==='complete') nav.classList.add('hidden');
+  if(name==='warmup'||name==='workout'||name==='rest'||name==='complete') nav.classList.add('hidden');
   else nav.classList.remove('hidden');
   // side effects — the workout engine manages timing itself now
   if(name==='home'){ document.getElementById('s-home').classList.remove('talking'); }
   // release the screen wake lock if we've left the active workout flow
-  if(name!=='workout' && name!=='rest' && name!=='complete'){ releaseWakeLock(); }
-  if(name==='complete'){ stopTimer(); fireConfetti(); }
+  if(name!=='warmup' && name!=='workout' && name!=='rest' && name!=='complete'){ releaseWakeLock(); }
+  if(name==='complete'){
+    stopTimer(); fireConfetti();
+    // reset the feedback picker for this new session
+    document.querySelectorAll('.feel').forEach(f=>f.classList.remove('sel'));
+    const ackBox=document.getElementById('feel-ack');
+    if(ackBox) ackBox.classList.remove('on');
+  }
   if(name==='progress'){ renderProgress(); }
   if(name==='today'){ renderRecent(); }
   if(name==='chat'){ setTimeout(()=>{ const i=document.getElementById('chat-input'); if(i) i.focus(); }, 350); }
@@ -840,6 +998,53 @@ function launchWorkout(w){
   pIdx=0; sessionStart=Date.now();
   if('speechSynthesis' in window){ speak(' '); }
   requestWakeLock();
+  startWarmup(w);
+}
+
+// ── WARMUP / GET READY (30s, skippable) ──
+const WARMUP_SECS=30;
+let warmId=null, warmLeft=0;
+
+function startWarmup(w){
+  clearInterval(warmId); warmId=null;
+  warmLeft=WARMUP_SECS;
+
+  const firstPhase=phases.find(p=>p.type==='work');
+  const firstName=firstPhase?firstPhase.name:'your first exercise';
+  const exCount=(w.exercises||[]).length;
+
+  document.getElementById('warm-name').textContent=w.name||'Your Session';
+  document.getElementById('warm-first').textContent=firstName;
+  document.getElementById('warm-num').textContent=warmLeft;
+  document.getElementById('warm-ring').setAttribute('stroke-dashoffset','0');
+
+  go('warmup');
+
+  // Coach briefs the session during the get-ready window.
+  const brief = `${w.name||'Your session'}. ${exCount} exercise${exCount===1?'':'s'}. `
+              + `First up: ${firstName}. Set your phone down and get into position.`;
+  speak(brief, {rate:0.9, pitch:0.95});
+
+  warmId=setInterval(()=>{
+    warmLeft--;
+    if(warmLeft<=0){ clearInterval(warmId); warmId=null; beginWorkout(); return; }
+    document.getElementById('warm-num').textContent=warmLeft;
+    document.getElementById('warm-ring').setAttribute('stroke-dashoffset', CIRC*(1-(warmLeft/WARMUP_SECS)));
+    if(warmLeft===10) speak('Ten seconds.', {rate:0.9});
+    if(warmLeft<=3)   speak(String(warmLeft), {rate:1.0, pitch:0.95});
+  },1000);
+}
+
+function skipWarmup(){
+  clearInterval(warmId); warmId=null;
+  try{ speechSynthesis.cancel(); }catch(e){}
+  beginWorkout();
+}
+
+// Warmup finished (or skipped) — start the real workout.
+function beginWorkout(){
+  sessionStart=Date.now();   // don't count warmup time in the session
+  speak('Here we go.', {rate:0.95, pitch:0.98});
   go('workout');
   startPhase();
 }
@@ -935,6 +1140,7 @@ function exitWorkout(){
   const ok = confirm('End this workout? Your progress this session won\u2019t be saved.');
   if(!ok) return;
   stopTimer();
+  if(warmId){ clearInterval(warmId); warmId=null; }
   releaseWakeLock();
   try{ speechSynthesis.cancel(); }catch(e){}
   paused=false;
@@ -1027,6 +1233,27 @@ function showTyping(){
 function hideTyping(){ const t=document.getElementById('typing'); if(t) t.remove(); }
 
 // Real call to the AI coach backend.
+// Build the context the coach needs to genuinely adapt session-to-session.
+function buildCoachContext(){
+  const ctx={};
+  const hist=stats.history||[];
+  if(hist.length){
+    const last=hist[0];
+    ctx.lastWorkout={
+      name: last.name,
+      intensity: last.intensity,
+      exercises: (last.exercises||[]).map(e=>e.name),
+      feel: last.feel || null,          // 'easy' | 'right' | 'hard' | null
+      daysAgo: Math.max(0, Math.round((Date.now()-last.ts)/86400000))
+    };
+    // last few workout names, so the coach can vary things
+    ctx.recentWorkouts = hist.slice(0,5).map(w=>w.name);
+  }
+  if(stats.streak) ctx.streak=stats.streak;
+  if(stats.sessions) ctx.totalSessions=stats.sessions;
+  return ctx;
+}
+
 async function askCoach(userText){
   coachHistory.push({role:'user', content:userText});
   showTyping();
@@ -1034,7 +1261,7 @@ async function askCoach(userText){
     const res=await fetch('/api/chat',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({messages:coachHistory})
+      body:JSON.stringify({messages:coachHistory, context: buildCoachContext()})
     });
     hideTyping();
     if(!res.ok){ throw new Error('bad response'); }
@@ -1095,9 +1322,34 @@ const _go=go;
 window.go=function(name){ if(name==='coach-demo'){ openCoach(); return; } _go(name); };
 
 // ── FEEL ──
-function pickFeel(el){
+function pickFeel(el, value){
   document.querySelectorAll('.feel').forEach(f=>f.classList.remove('sel'));
   el.classList.add('sel');
+
+  // Coach acknowledges — on screen AND out loud.
+  const acks={
+    easy:  { text:"Noted — that was too easy. Next session I'll push you harder.",
+             say:"Noted. Too easy. I'll push you harder next time." },
+    right: { text:"Perfect. That's the sweet spot — I'll keep you right there.",
+             say:"Perfect. That's the sweet spot." },
+    hard:  { text:"Got it — that was a lot. I'll dial it back next session. Recover well.",
+             say:"Got it. I'll dial it back next time. Recover well." }
+  };
+  const a=acks[value]||acks.right;
+  const box=document.getElementById('feel-ack');
+  const txt=document.getElementById('feel-ack-text');
+  if(txt) txt.textContent=a.text;
+  if(box) box.classList.add('on');
+  speak(a.say, {rate:0.9, pitch:0.95});
+
+  // Persist it — this is what makes the button MEAN something.
+  // The most recent session in history is the one just completed.
+  if(stats.history && stats.history.length){
+    stats.history[0].feel=value;
+  }
+  stats.lastFeel=value;
+  stats.lastFeelAt=Date.now();
+  saveStats();
 }
 
 // ── CONFETTI ──
@@ -1186,36 +1438,54 @@ function fmtWhen(ts){
   return d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
 }
 
+// Shared card builder — used by both Favorites and Recent.
+function libCard(w, i){
+  const sets=w.exercises.reduce((a,e)=>a+(e.sets||1),0);
+  const mins=Math.max(1,Math.round(w.exercises.reduce((a,e)=>a+(e.sets||1)*((e.work||40)+(e.rest||20)),0)/60));
+  const unit = w.exercises.length===1 ? `${sets} set${sets>1?'s':''}` : `${w.exercises.length} exercises · ${sets} sets`;
+  const exNames=w.exercises.map(e=>e.name).join(' · ');
+  return `<div class="lib-card" onclick="openWorkoutDetail(${i})">
+    <div class="lib-card-top">
+      <div class="lib-card-name">${w.name}</div>
+      <div class="lib-card-fav ${w.fav?'on':''}" onclick="event.stopPropagation();toggleFav(${i})" aria-label="Favorite">
+        <svg viewBox="0 0 24 24"><polygon points="12 2 15 9 22 9 16 14 18 21 12 17 6 21 8 14 2 9 9 9"/></svg>
+      </div>
+    </div>
+    <div class="lib-card-meta">${unit} · ${mins} min · ${w.intensity||'MEDIUM'} intensity</div>
+    <div class="lib-card-ex">${exNames}</div>
+    <div class="lib-card-when">${fmtWhen(w.ts)}</div>
+  </div>`;
+}
+
 function renderRecent(){
   document.querySelectorAll('.streak-n2').forEach(e=>e.textContent=stats.streak||0);
-  const wrap=document.getElementById('recent-list'); if(!wrap) return;
   const hist=stats.history||[];
+
+  // ── Favorites (only shows when there are any) ──
+  const favSec=document.getElementById('fav-section');
+  const favWrap=document.getElementById('fav-list');
+  const favs=hist.map((w,i)=>({w,i})).filter(x=>x.w.fav);
+  if(favSec && favWrap){
+    if(favs.length){
+      favSec.style.display='block';
+      favWrap.innerHTML=favs.map(x=>libCard(x.w, x.i)).join('');
+    } else {
+      favSec.style.display='none';
+      favWrap.innerHTML='';
+    }
+  }
+
+  // ── Recent ──
+  const wrap=document.getElementById('recent-list'); if(!wrap) return;
   if(!hist.length){
     wrap.innerHTML='<div class="lib-empty">No workouts yet. Ask your coach to build your first session — it\u2019ll show up here so you can repeat it anytime.</div>';
     return;
   }
-  wrap.innerHTML=hist.map((w,i)=>{
-    const sets=w.exercises.reduce((a,e)=>a+(e.sets||1),0);
-    const mins=Math.max(1,Math.round(w.exercises.reduce((a,e)=>a+(e.sets||1)*((e.work||40)+(e.rest||20)),0)/60));
-    const unit = w.exercises.length===1 ? `${sets} set${sets>1?'s':''}` : `${w.exercises.length} exercises · ${sets} sets`;
-    const exNames=w.exercises.map(e=>e.name).join(' · ');
-    return `<div class="lib-card" onclick="repeatWorkout(${i})">
-      <div class="lib-card-top">
-        <div class="lib-card-name">${w.name}</div>
-        <div class="lib-card-fav ${w.fav?'on':''}" onclick="event.stopPropagation();toggleFav(${i})" aria-label="Favorite">
-          <svg viewBox="0 0 24 24"><polygon points="12 2 15 9 22 9 16 14 18 21 12 17 6 21 8 14 2 9 9 9"/></svg>
-        </div>
-      </div>
-      <div class="lib-card-meta">${unit} · ${mins} min · ${w.intensity||'MEDIUM'} intensity</div>
-      <div class="lib-card-ex">${exNames}</div>
-      <div class="lib-card-when">${fmtWhen(w.ts)}</div>
-    </div>`;
-  }).join('');
+  wrap.innerHTML=hist.map((w,i)=>libCard(w,i)).join('');
 }
 
 function repeatWorkout(i){
   const w=(stats.history||[])[i]; if(!w) return;
-  // launch a copy so edits/repeats don't mutate history
   launchWorkout(JSON.parse(JSON.stringify(w)));
 }
 function toggleFav(i){
@@ -1223,8 +1493,123 @@ function toggleFav(i){
   stats.history[i].fav=!stats.history[i].fav;
   saveStats(); renderRecent();
 }
+
+// ── WORKOUT DETAIL / EDIT BEFORE STARTING ──
+let editWorkout=null;      // working copy the user is adjusting
+let editOriginal=null;     // pristine copy, for "reset"
+
+function openWorkoutDetail(i){
+  const w=(stats.history||[])[i]; if(!w) return;
+  editOriginal=JSON.parse(JSON.stringify(w));
+  editWorkout =JSON.parse(JSON.stringify(w));
+  go('detail');
+  renderDetail();
+}
+
+function renderDetail(){
+  if(!editWorkout) return;
+  const w=editWorkout;
+  const totalSets=w.exercises.reduce((a,e)=>a+(e.sets||1),0);
+  const mins=Math.max(1,Math.round(w.exercises.reduce((a,e)=>a+(e.sets||1)*((e.work||40)+(e.rest||20)),0)/60));
+  document.getElementById('det-name').textContent=w.name||'Workout';
+  document.getElementById('det-meta').textContent=
+    `${w.exercises.length} exercise${w.exercises.length===1?'':'s'} · ${totalSets} sets · ${mins} min`;
+
+  document.getElementById('det-ex-list').innerHTML=w.exercises.map((e,i)=>`
+    <div class="det-ex">
+      <div class="det-ex-top">
+        <div class="det-ex-n">${i+1}</div>
+        <div class="det-ex-name">${e.name}</div>
+      </div>
+      <div class="det-fields">
+        <div class="det-field">
+          <div class="det-field-l">Sets</div>
+          <div class="det-field-c">
+            <button class="det-mini" onclick="editAdjust(${i},'sets',-1)">−</button>
+            <span class="det-field-v">${e.sets||1}</span>
+            <button class="det-mini" onclick="editAdjust(${i},'sets',1)">+</button>
+          </div>
+        </div>
+        <div class="det-field">
+          <div class="det-field-l">Work</div>
+          <div class="det-field-c">
+            <button class="det-mini" onclick="editAdjust(${i},'work',-5)">−</button>
+            <span class="det-field-v">${e.work||40}s</span>
+            <button class="det-mini" onclick="editAdjust(${i},'work',5)">+</button>
+          </div>
+        </div>
+        <div class="det-field">
+          <div class="det-field-l">Rest</div>
+          <div class="det-field-c">
+            <button class="det-mini" onclick="editAdjust(${i},'rest',-5)">−</button>
+            <span class="det-field-v">${e.rest||20}s</span>
+            <button class="det-mini" onclick="editAdjust(${i},'rest',5)">+</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function editAdjust(i, field, delta){
+  if(!editWorkout || !editWorkout.exercises[i]) return;
+  const e=editWorkout.exercises[i];
+  const cur=parseInt(e[field]) || (field==='sets'?1:(field==='work'?40:20));
+  let next=cur+delta;
+  // sensible bounds
+  if(field==='sets') next=Math.max(1, Math.min(20, next));
+  if(field==='work') next=Math.max(5, Math.min(300, next));
+  if(field==='rest') next=Math.max(0, Math.min(300, next));
+  e[field]=next;
+  if(navigator.vibrate) navigator.vibrate(10);
+  renderDetail();
+}
+
+function resetEdits(){
+  if(!editOriginal) return;
+  editWorkout=JSON.parse(JSON.stringify(editOriginal));
+  renderDetail();
+}
+
+function startEditedWorkout(){
+  if(!editWorkout) return;
+  launchWorkout(JSON.parse(JSON.stringify(editWorkout)));
+}
+
+// ── QUICK INTERVAL TIMER (manual, no coach) ──
+let qt={rounds:8, work:30, rest:15};
+
 function openQuickTimer(){
-  alert('Quick interval timer is coming soon. For now, ask your coach to build you a session — just tell it what you want.');
+  go('quick');
+  renderQuick();
+}
+function qtAdjust(field, delta){
+  let next=qt[field]+delta;
+  if(field==='rounds') next=Math.max(1, Math.min(50, next));
+  if(field==='work')   next=Math.max(5, Math.min(600, next));
+  if(field==='rest')   next=Math.max(0, Math.min(600, next));
+  qt[field]=next;
+  if(navigator.vibrate) navigator.vibrate(10);
+  renderQuick();
+}
+function renderQuick(){
+  document.getElementById('qt-rounds').textContent=qt.rounds;
+  document.getElementById('qt-work').textContent=qt.work;
+  document.getElementById('qt-rest').textContent=qt.rest;
+  const totalSecs=qt.rounds*(qt.work+qt.rest);
+  const m=Math.floor(totalSecs/60), s=totalSecs%60;
+  document.getElementById('qt-total').textContent=
+    `Total: ${m} min${s?` ${s} sec`:''}`;
+}
+function startQuickTimer(){
+  // Build a workout object the existing engine understands.
+  const w={
+    name:'Quick Timer',
+    intensity:'MEDIUM',
+    exercises:[{ name:'Work', sets:qt.rounds, work:qt.work, rest:qt.rest }],
+    coachingCues:['Keep going.','Stay steady.','Push through.'],
+    _quick:true
+  };
+  launchWorkout(w);
 }
 
 function renderProgress(){
