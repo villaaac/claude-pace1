@@ -433,6 +433,11 @@ html,body{height:100%;background:#000;font-family:'Barlow',sans-serif;color:var(
   #rotate-guard{display:flex;}
 }
 </style>
+<!-- Vercel Web Analytics (plain HTML — no build step needed) -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 <div id="phone">
@@ -861,6 +866,11 @@ const screens=['home','chat','today','detail','quick','warmup','workout','rest',
 const navMap={home:'n-home',chat:'n-home',today:'n-today',detail:'n-today',quick:'n-workout',warmup:'n-workout',workout:'n-workout',rest:'n-workout',complete:'n-progress',progress:'n-progress'};
 let current='home';
 
+// ── ANALYTICS: track the funnel (opened → coach → workout → finished) ──
+function track(event, data){
+  try{ if(window.va) window.va('event', {name:event, data:data||{}}); }catch(e){}
+}
+
 // ── SCREEN WAKE LOCK (keep screen on during workouts) ──
 let wakeLock=null;
 async function requestWakeLock(){
@@ -965,6 +975,7 @@ let cuePool=[];
 
 // Build a phase list (work/rest alternating) from a coach workout object.
 function launchWorkout(w){
+  track('workout_started', { source: w._quick ? 'quick_timer' : 'coach_or_library' });
   activeWorkout=w;
   cuePool=(w.coachingCues&&w.coachingCues.length)?w.coachingCues.slice():['Stay with it.','Keep your form.','You\u2019ve got this.'];
   // Normalize exercises into {name,sets,work,rest} objects (supports legacy strings)
@@ -1148,6 +1159,7 @@ function exitWorkout(){
 }
 
 function finishWorkout(){
+  track('workout_completed');
   stopTimer();
   releaseWakeLock();
   const elapsed=Math.round((Date.now()-sessionStart)/1000);
@@ -1255,6 +1267,7 @@ function buildCoachContext(){
 }
 
 async function askCoach(userText){
+  track('coach_message');
   coachHistory.push({role:'user', content:userText});
   showTyping();
   try{
