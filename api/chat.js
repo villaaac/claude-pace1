@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Server not configured — missing ANTHROPIC_API_KEY' });
   }
 
-  const { messages } = req.body || {};
+  const { messages, context } = req.body || {};
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'Missing conversation messages' });
   }
@@ -67,6 +67,47 @@ CRITICAL RULES for workouts:
 
 Use the whole conversation as context — never make the user repeat themselves.`;
 
+  // ── TRAINING HISTORY CONTEXT ──
+  // This is what makes PACE a real coach instead of a workout generator: it must
+  // genuinely adapt based on how the last session actually felt to the user.
+  let contextBlock = '';
+  if (context && typeof context === 'object') {
+    const lw = context.lastWorkout;
+    const parts = [];
+
+    if (lw) {
+      parts.push(`Their last session was "${lw.name}" (${lw.intensity || 'MEDIUM'} intensity)${
+        lw.daysAgo === 0 ? ' — earlier today' : lw.daysAgo === 1 ? ' — yesterday' : ` — ${lw.daysAgo} days ago`
+      }.`);
+      if (Array.isArray(lw.exercises) && lw.exercises.length) {
+        parts.push(`It included: ${lw.exercises.join(', ')}.`);
+      }
+      if (lw.feel === 'easy') {
+        parts.push(`THEY RATED IT "TOO EASY". You MUST make this session harder — raise intensity, lengthen work intervals, shorten rest, or pick more demanding movements. Acknowledge it briefly ("You said last one was too easy — stepping it up.").`);
+      } else if (lw.feel === 'hard') {
+        parts.push(`THEY RATED IT "TOO HARD". You MUST make this session easier — lower intensity, shorten work intervals, lengthen rest, or pick gentler movements. Acknowledge it briefly ("Last one was a lot — dialing it back today.").`);
+      } else if (lw.feel === 'right') {
+        parts.push(`They rated it "just right". Keep a similar difficulty, but VARY the exercises so it doesn't get stale.`);
+      }
+    }
+
+    if (Array.isArray(context.recentWorkouts) && context.recentWorkouts.length) {
+      parts.push(`Their recent sessions were: ${context.recentWorkouts.join(', ')}. Give them something different — don't repeat the same workout.`);
+    }
+    if (context.streak) {
+      parts.push(`They are on a ${context.streak}-day streak.`);
+    }
+    if (context.totalSessions) {
+      parts.push(`They have completed ${context.totalSessions} session(s) with you in total.`);
+    }
+
+    if (parts.length) {
+      contextBlock = `\n\n--- WHAT YOU KNOW ABOUT THIS USER (use it, don't recite it) ---\n${parts.join('\n')}\n\nCRITICAL: If they rated the last session too easy or too hard, the workout you build now MUST actually be different in difficulty. Do NOT say you changed something and then build the same thing — that destroys trust. Make the change real.`;
+    }
+  }
+
+  const systemFull = system + contextBlock;
+
   try {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -78,7 +119,7 @@ Use the whole conversation as context — never make the user repeat themselves.
       body: JSON.stringify({
         model: 'claude-sonnet-5',
         max_tokens: 1024,
-        system,
+        system: systemFull,
         messages: convo,
       }),
     });
