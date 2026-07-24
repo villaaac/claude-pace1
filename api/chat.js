@@ -36,8 +36,23 @@ the same response. Example confirm: "Got it — 20 minutes, low energy, keeping 
 
 You do TWO things:
 
-1) COACHING CHAT — motivation, check-ins, answering questions. Reply in plain, warm text,
-   max 3 sentences. No JSON. No emoji.
+DEFAULT TO BUILDING. If there is ANY reasonable reading of the message as wanting to
+train, BUILD THE WORKOUT. Do not describe a workout in prose. Do not explain what they
+should do. Do not critique their settings or their stats. Do not suggest a structure and
+wait for approval. BUILD IT. The user cannot start a session from prose — they can only
+start one from the workout you build. Prose instead of a workout is a failure.
+
+Examples that MUST return workout JSON, not chat:
+- "F45 style 45 minute workout"
+- "20 minutes, feeling strong"
+- "something for legs"
+- "surprise me"
+- "make it harder"  (rebuild the last workout, harder)
+- "add more rest"   (rebuild the last workout with more rest)
+
+1) COACHING CHAT — ONLY for genuine questions with no intent to train right now
+   (e.g. "how many days a week should I train?", "what is a superset?"). Reply in plain,
+   warm text, max 3 sentences. No JSON. No emoji.
 
 2) BUILDING A WORKOUT — when the user wants a session (they mention a workout, a sport, a
    mood + intent to train, a duration, etc.), respond with ONLY a JSON object, no prose and
@@ -102,7 +117,7 @@ Use the whole conversation as context — never make the user repeat themselves.
     }
 
     if (parts.length) {
-      contextBlock = `\n\n--- WHAT YOU KNOW ABOUT THIS USER (use it, don't recite it) ---\n${parts.join('\n')}\n\nCRITICAL: If they rated the last session too easy or too hard, the workout you build now MUST actually be different in difficulty. Do NOT say you changed something and then build the same thing — that destroys trust. Make the change real.`;
+      contextBlock = `\n\n--- WHAT YOU KNOW ABOUT THIS USER (use it, don't recite it) ---\n${parts.join('\n')}\n\nCRITICAL RULES FOR THIS CONTEXT:\n1. This is background knowledge to SHAPE the workout you build. Never quote these numbers back at the user, never critique their settings, never analyse their averages. They did not ask for a report.\n2. If they rated the last session too easy or too hard, the workout you build now MUST actually be different in difficulty. Do NOT say you changed something and then build the same thing — that destroys trust. Make the change real.\n3. You still BUILD A WORKOUT. Context never turns a workout request into a chat reply.`;
     }
   }
 
@@ -118,7 +133,7 @@ Use the whole conversation as context — never make the user repeat themselves.
       },
       body: JSON.stringify({
         model: 'claude-sonnet-5',
-        max_tokens: 1024,
+        max_tokens: 4096,
         system: systemFull,
         messages: convo,
       }),
@@ -162,8 +177,15 @@ Use the whole conversation as context — never make the user repeat themselves.
       } catch (e) { /* not JSON — treat as chat */ }
     }
 
+    // SAFETY NET: if the model emitted JSON we couldn't parse (e.g. it was
+    // truncated), never dump the raw blob into the chat. Ask for a retry instead.
+    let safeText = text;
+    if (!workout && /\{[\s\S]*"type"\s*:\s*"workout"/.test(text)) {
+      safeText = "That one came out a bit long and got cut off \u2014 ask me again and I'll tighten it up.";
+    }
+
     return res.status(200).json({
-      reply: workout ? (workout.intro || 'Here\u2019s your session.') : text,
+      reply: workout ? (workout.intro || 'Here\u2019s your session.') : safeText,
       workout,
     });
   } catch (e) {
