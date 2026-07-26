@@ -4,6 +4,7 @@
 // Connects the on-screen conversation to the Anthropic API.
 // The API key stays server-side and is never exposed to the browser.
 
+export default async function handler(req, res) {
 // CORS — let the web app (pace-ios) reach this backend from its own address.
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
