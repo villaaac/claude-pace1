@@ -5,7 +5,7 @@
 // The API key stays server-side and is never exposed to the browser.
 
 export default async function handler(req, res) {
-// CORS — let the web app (pace-ios) reach this backend from its own address.
+  // CORS — let the web app (pace-ios) reach this backend from its own address.
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -13,7 +13,9 @@ export default async function handler(req, res) {
   // Browsers send a preflight OPTIONS before the real POST — answer it OK.
   if (req.method === 'OPTIONS') {
     return res.status(204).end();
-  }  if (req.method !== 'POST') {
+  }
+
+  if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
@@ -65,23 +67,27 @@ Examples that MUST return workout JSON, not chat:
 2) BUILDING A WORKOUT — when the user wants a session (they mention a workout, a sport, a
    mood + intent to train, a duration, etc.), respond with ONLY a JSON object, no prose and
    no markdown fences, in EXACTLY this shape:
-{"type":"workout","intro":"one short confirming + encouraging line, spoken to the user, no emoji","name":"short workout name","intensity":"LOW|MEDIUM|HIGH","exercises":[{"name":"exercise name","sets":number,"work":number,"rest":number}, ...],"coachingCues":["short cue 1","short cue 2","short cue 3"],"why":"1 sentence on why this fits them"}
+{"type":"workout","intro":"one short confirming + encouraging line, spoken to the user, no emoji","name":"short workout name","intensity":"LOW|MEDIUM|HIGH","exercises":[{"name":"exercise name (Primary Muscles)","sets":number,"work":number,"rest":number}, ...],"coachingCues":["short cue 1","short cue 2","short cue 3"],"why":"1 sentence on why this fits them"}
 
 EXERCISE STRUCTURE:
-- Each exercise is an object with: "name" (short, called out loud), "sets" (how many
-  times to repeat this exercise), "work" (seconds of effort per set), "rest" (seconds of
-  rest after each set).
+- Each exercise is an object with: "name" (short, called out loud, with targeted muscles
+  in parentheses), "sets" (how many times to repeat this exercise), "work" (seconds of
+  effort per set), "rest" (seconds of rest after each set).
 - DEFAULT: if the user does NOT ask for multiple sets, give each exercise "sets": 1 and
   build a normal circuit of different exercises (one pass through).
 - WHEN THE USER ASKS FOR SETS: honor it exactly. Example: "1 round of pull-ups, 4 sets,
   40 seconds work 40 seconds rest" becomes a single exercise
-  {"name":"Pull-ups","sets":4,"work":40,"rest":40}. The user dictates how many sets of
-  each exercise they want.
+  {"name":"Pull-ups (Back, Biceps)","sets":4,"work":40,"rest":40}. The user dictates how
+  many sets of each exercise they want.
 - Users can mix: some exercises with multiple sets, others with 1.
 
 CRITICAL RULES for workouts:
-- Exercise names are called out loud, so keep them short and clear (e.g. "Speed Bag",
-  "Jab-Cross-Hook", "Burpees", "Pull-ups"). No emoji anywhere.
+- Every exercise name MUST end with the primary muscle group(s) it targets, in
+  parentheses: "Squats (Legs, Glutes)", "Push-ups (Chest, Triceps)", "Plank (Core)",
+  "Mountain Climbers (Core, Shoulders)". List 1-2 primary muscles, Title Case,
+  comma-separated. Keep the exercise part itself short and clear (e.g. "Speed Bag",
+  "Burpees", "Pull-ups"). The app shows the muscles on screen and automatically strips
+  them when the coach speaks, so ALWAYS include them. No emoji anywhere.
 - Read the user's MOOD and NEEDS. Tired/low-energy: shorter, lower intensity, restorative.
   Fired up / short on time: sharp and intense. Adapt genuinely to what they say.
 - The intro line should confirm what they asked for, then hype them up briefly.
