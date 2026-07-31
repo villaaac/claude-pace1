@@ -130,6 +130,14 @@ Use the whole conversation as context — never make the user repeat themselves.
       parts.push(`They have completed ${context.totalSessions} session(s) with you in total.`);
     }
 
+    // Onboarding primers — especially important for the FIRST session, before history.
+    if (context.goal) {
+      parts.push(`Their training focus is ${context.goal}. Lean exercise selection toward this.`);
+    }
+    if (context.level) {
+      parts.push(`Their self-described fitness level is ${context.level}. Match difficulty, movement complexity, and pacing to it — gentler and simpler for newer users, more demanding for advanced.`);
+    }
+
     if (parts.length) {
       contextBlock = `\n\n--- WHAT YOU KNOW ABOUT THIS USER (use it, don't recite it) ---\n${parts.join('\n')}\n\nCRITICAL RULES FOR THIS CONTEXT:\n1. This is background knowledge to SHAPE the workout you build. Never quote these numbers back at the user, never critique their settings, never analyse their averages. They did not ask for a report.\n2. If they rated the last session too easy or too hard, the workout you build now MUST actually be different in difficulty. Do NOT say you changed something and then build the same thing — that destroys trust. Make the change real.\n3. You still BUILD A WORKOUT. Context never turns a workout request into a chat reply.`;
     }
